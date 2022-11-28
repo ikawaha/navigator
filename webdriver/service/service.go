@@ -74,7 +74,6 @@ func (s *Service) Stop() error {
 	if s.command == nil {
 		return errors.New("already stopped")
 	}
-
 	switch runtime.GOOS {
 	case "windows":
 		if err := s.command.Process.Kill(); err != nil {

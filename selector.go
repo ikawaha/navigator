@@ -3,7 +3,7 @@ package navigator
 import (
 	"fmt"
 
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 type selectorType string

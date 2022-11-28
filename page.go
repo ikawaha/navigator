@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ikawaha/navi/event"
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/event"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 const aboutBlankURL = "about:blank"

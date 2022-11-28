@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/ikawaha/navi/event"
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/event"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 type actionsFunc func(*session.Element) error

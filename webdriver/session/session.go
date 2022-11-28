@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ikawaha/navi/event"
+	"github.com/ikawaha/navigator/event"
 )
 
 const (

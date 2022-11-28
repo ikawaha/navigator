@@ -1,7 +1,7 @@
 package navigator
 
 import (
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 // A MultiSelection is a Selection that may be indexed using the At() method.

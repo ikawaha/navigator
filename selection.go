@@ -3,7 +3,7 @@ package navigator
 import (
 	"fmt"
 
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 // Selection instances refer to a selection of elements.

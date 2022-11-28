@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/ikawaha/navi/webdriver"
+	"github.com/ikawaha/navigator/webdriver"
 )
 
 // A WebDriver controls a WebDriver process. This struct embeds webdriver.WebDriver,

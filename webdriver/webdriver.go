@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ikawaha/navi/webdriver/service"
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/webdriver/service"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 type WebDriver struct {

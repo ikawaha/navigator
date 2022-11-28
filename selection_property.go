@@ -3,7 +3,7 @@ package navigator
 import (
 	"fmt"
 
-	"github.com/ikawaha/navi/webdriver/session"
+	"github.com/ikawaha/navigator/webdriver/session"
 )
 
 // Text returns the entirety of the text content for exactly one element.

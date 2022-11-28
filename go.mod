@@ -1,3 +1,3 @@
-module github.com/ikawaha/navi
+module github.com/ikawaha/navigator
 
 go 1.19
