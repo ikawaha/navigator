@@ -9,7 +9,7 @@ import (
 
 type Selectable struct {
 	session   *session.Session
-	selectors Selectors
+	selectors selectors
 }
 
 // Find finds exactly one element by CSS selector.
@@ -184,7 +184,7 @@ func (s *Selectable) getElements() ([]*session.Element, error) {
 }
 
 // XXX refactoring ???
-func retrieveElements(client *session.Session, selector Selector) ([]*session.Element, error) {
+func retrieveElements(client *session.Session, selector selector) ([]*session.Element, error) {
 	if selector.Single {
 		elements, err := client.GetElements(selector.SessionSelector())
 		if err != nil {

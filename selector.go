@@ -6,35 +6,35 @@ import (
 	"github.com/ikawaha/navi/webdriver/session"
 )
 
-type SelectorType string
+type selectorType string
 
 const (
-	cssType             SelectorType = "CSS: %s"
-	xPathType           SelectorType = "XPath: %s"
-	linkType            SelectorType = `Link: "%s"`
-	labelType           SelectorType = `Label: "%s"`
-	buttonType          SelectorType = `Button: "%s"`
-	nameType            SelectorType = `Name: "%s"`
-	accessibilityIDType SelectorType = "Accessibility ID: %s"
-	androidAutType      SelectorType = "Android UIAut.: %s"
-	iosAutType          SelectorType = "iOS UIAut.: %s"
-	classType           SelectorType = "Class: %s"
-	idType              SelectorType = "ID: %s"
+	cssType             selectorType = "CSS: %s"
+	xPathType           selectorType = "XPath: %s"
+	linkType            selectorType = `Link: "%s"`
+	labelType           selectorType = `Label: "%s"`
+	buttonType          selectorType = `Button: "%s"`
+	nameType            selectorType = `Name: "%s"`
+	accessibilityIDType selectorType = "Accessibility ID: %s"
+	androidAutType      selectorType = "Android UIAut.: %s"
+	iosAutType          selectorType = "iOS UIAut.: %s"
+	classType           selectorType = "Class: %s"
+	idType              selectorType = "ID: %s"
 )
 
-func (t SelectorType) format(value string) string {
+func (t selectorType) format(value string) string {
 	return fmt.Sprintf(string(t), value)
 }
 
-type Selector struct {
-	Type    SelectorType
+type selector struct {
+	Type    selectorType
 	Value   string
 	Index   int
 	Indexed bool
 	Single  bool
 }
 
-func (s Selector) String() string {
+func (s selector) String() string {
 	var suffix string
 	if s.Single {
 		suffix = " [single]"
@@ -44,14 +44,14 @@ func (s Selector) String() string {
 	return s.Type.format(s.Value) + suffix
 }
 
-func (s Selector) SessionSelector() session.Selector {
+func (s selector) SessionSelector() session.Selector {
 	return session.Selector{
 		Using: s.selectorType(),
 		Value: s.value(),
 	}
 }
 
-func (s Selector) selectorType() string {
+func (s selector) selectorType() string {
 	switch s.Type {
 	case cssType:
 		return "css selector"
@@ -78,7 +78,7 @@ const (
 	buttonXPath = `//input[@type="submit" or @type="button"][normalize-space(@value)="%s"] | //button[normalize-space()="%[1]s"]`
 )
 
-func (s Selector) value() string {
+func (s selector) value() string {
 	switch s.Type {
 	case labelType:
 		return fmt.Sprintf(labelXPath, s.Value)

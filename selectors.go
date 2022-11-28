@@ -4,9 +4,9 @@ import (
 	"strings"
 )
 
-type Selectors []Selector
+type selectors []selector
 
-func (s Selectors) canMergeType(selectorType SelectorType) bool {
+func (s selectors) canMergeType(selectorType selectorType) bool {
 	if len(s) == 0 {
 		return false
 	}
@@ -15,8 +15,9 @@ func (s Selectors) canMergeType(selectorType SelectorType) bool {
 	return bothCSS && !last.Indexed && !last.Single
 }
 
-func (s Selectors) Append(selectorType SelectorType, value string) Selectors {
-	selector := Selector{
+// XXX to private ?
+func (s selectors) Append(selectorType selectorType, value string) selectors {
+	selector := selector{
 		Type:  selectorType,
 		Value: value,
 	}
@@ -28,7 +29,7 @@ func (s Selectors) Append(selectorType SelectorType, value string) Selectors {
 	return s.append(selector)
 }
 
-func (s Selectors) Single() Selectors {
+func (s selectors) Single() selectors {
 	lastIndex := len(s) - 1
 	if lastIndex < 0 {
 		return nil
@@ -39,7 +40,7 @@ func (s Selectors) Single() Selectors {
 	return s[:lastIndex].append(selector)
 }
 
-func (s Selectors) At(index int) Selectors {
+func (s selectors) At(index int) selectors {
 	lastIndex := len(s) - 1
 	if lastIndex < 0 {
 		return nil
@@ -51,7 +52,7 @@ func (s Selectors) At(index int) Selectors {
 	return s[:lastIndex].append(selector)
 }
 
-func (s Selectors) String() string {
+func (s selectors) String() string {
 	var tags []string
 	for _, selector := range s {
 		tags = append(tags, selector.String())
@@ -59,7 +60,7 @@ func (s Selectors) String() string {
 	return strings.Join(tags, " | ")
 }
 
-func (s Selectors) append(selector Selector) Selectors {
-	selectorsCopy := append(Selectors(nil), s...)
+func (s selectors) append(selector selector) selectors {
+	selectorsCopy := append(selectors(nil), s...)
 	return append(selectorsCopy, selector)
 }

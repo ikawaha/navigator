@@ -23,7 +23,7 @@ type MultiSelection struct {
 	Selection
 }
 
-func newMultiSelection(session *session.Session, selectors Selectors) *MultiSelection {
+func newMultiSelection(session *session.Session, selectors selectors) *MultiSelection {
 	return &MultiSelection{
 		Selection: *newSelection(session, selectors),
 	}

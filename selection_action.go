@@ -139,7 +139,7 @@ func (s *Selection) setChecked(checked bool) error {
 func (s *Selection) Select(text string) error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		optionXPath := fmt.Sprintf(`./option[normalize-space()="%s"]`, text)
-		optionToSelect := Selector{Type: xPathType, Value: optionXPath}
+		optionToSelect := selector{Type: xPathType, Value: optionXPath}
 		options, err := selectedElement.Session.GetElements(optionToSelect.SessionSelector())
 		if err != nil {
 			return fmt.Errorf("failed to select specified option for %s: %s", s, err)

@@ -26,7 +26,7 @@ type Selection struct {
 	Selectable
 }
 
-func newSelection(session *session.Session, selectors Selectors) *Selection {
+func newSelection(session *session.Session, selectors selectors) *Selection {
 	return &Selection{
 		Selectable: Selectable{
 			session:   session,
