@@ -13,7 +13,7 @@ import (
 
 type Connection struct {
 	SessionURL string
-	HTTPClient *http.Client
+	httpClient *http.Client
 }
 
 func newConnection(client *http.Client, serviceURL string, capabilities map[string]any) (*Connection, error) {
@@ -27,7 +27,7 @@ func newConnection(client *http.Client, serviceURL string, capabilities map[stri
 	}
 	return &Connection{
 		SessionURL: serviceURL + "/session/" + sessionID,
-		HTTPClient: client,
+		httpClient: client,
 	}, nil
 }
 
@@ -136,7 +136,7 @@ func (c *Connection) doRequest(method, url string, body []byte) ([]byte, error) 
 	if body != nil {
 		req.Header.Add("Content-Type", "application/json")
 	}
-	response, err := c.HTTPClient.Do(req)
+	response, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}

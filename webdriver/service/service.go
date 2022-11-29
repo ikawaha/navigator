@@ -15,6 +15,7 @@ import (
 	"time"
 )
 
+// Service represents a web driver service.
 type Service struct {
 	mu       sync.Mutex
 	urlT     string   // url template eg. "http://localhost:{{.Port}}"
@@ -23,6 +24,7 @@ type Service struct {
 	command  *exec.Cmd
 }
 
+// New creates new web driver service.
 func New(urlT string, commandT []string) *Service {
 	return &Service{
 		urlT:     urlT,
@@ -30,10 +32,12 @@ func New(urlT string, commandT []string) *Service {
 	}
 }
 
+// URL returns the base URL of the service.
 func (s *Service) URL() string {
 	return s.baseURL
 }
 
+// Start starts the service.
 func (s *Service) Start(debug bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -73,6 +77,7 @@ func (s *Service) Start(debug bool) error {
 	return nil
 }
 
+// Stop stops the service.
 func (s *Service) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -124,19 +129,20 @@ func getFreeAddress() (addressInfo, error) {
 
 const bootWait = 500 * time.Millisecond
 
+// WaitForBoot waits until the service starts.
 func (s *Service) WaitForBoot(timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	wakeup := make(chan struct{})
 	go func(ctx context.Context) {
-		up := s.checkStatus()
+		up := s.checkStatus(ctx)
 		for !up {
 			select {
 			case <-ctx.Done():
 				return
 			default:
 				time.Sleep(bootWait)
-				up = s.checkStatus()
+				up = s.checkStatus(ctx)
 			}
 		}
 		wakeup <- struct{}{}
@@ -149,11 +155,11 @@ func (s *Service) WaitForBoot(timeout time.Duration) error {
 	}
 }
 
-func (s *Service) checkStatus() bool {
+func (s *Service) checkStatus(ctx context.Context) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	req, err := http.NewRequest(http.MethodGet, s.baseURL+"/status", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+"/status", nil)
 	if err != nil {
 		return false
 	}
@@ -165,7 +171,7 @@ func (s *Service) checkStatus() bool {
 		return false
 	}
 	defer func() {
-		io.Copy(io.Discard, resp.Body)
+		_, _ = io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 	}()
 	return resp.StatusCode == 200
