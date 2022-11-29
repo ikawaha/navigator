@@ -2,6 +2,7 @@ package session
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,8 +12,9 @@ import (
 	"strings"
 )
 
+// Connection is a bus to the webdriver service.
 type Connection struct {
-	SessionURL string
+	sessionURL string
 	httpClient *http.Client
 }
 
@@ -26,7 +28,7 @@ func newConnection(client *http.Client, serviceURL string, capabilities map[stri
 		return nil, err
 	}
 	return &Connection{
-		SessionURL: serviceURL + "/session/" + sessionID,
+		sessionURL: serviceURL + "/session/" + sessionID,
 		httpClient: client,
 	}, nil
 }
@@ -49,7 +51,7 @@ func capabilitiesToJSONRequest(capabilities map[string]any) (io.Reader, error) {
 }
 
 func openSession(client *http.Client, serviceURL string, body io.Reader) (sessionID string, err error) {
-	req, err := http.NewRequest(http.MethodPost, serviceURL+"/session", body)
+	req, err := http.NewRequestWithContext(context.TODO(), http.MethodPost, serviceURL+"/session", body)
 	if err != nil {
 		return "", err
 	}
@@ -87,14 +89,15 @@ func openSession(client *http.Client, serviceURL string, body io.Reader) (sessio
 	return "", errors.New("failed to retrieve a session ID")
 }
 
+// Send sends the message to the browser.
 func (c *Connection) Send(method string, pathname string, body, result any) error {
 	req, err := bodyToJSON(body)
 	if err != nil {
 		return err
 	}
-	path := strings.TrimSuffix(c.SessionURL+"/"+pathname, "/")
+	path := strings.TrimSuffix(c.sessionURL+"/"+pathname, "/")
 
-	log.Println(path) //XXX
+	log.Println(path) // XXX
 
 	resp, err := c.doRequest(method, path, req)
 	if err != nil {
@@ -129,7 +132,7 @@ func responseToValue(src []byte, dst any) error {
 }
 
 func (c *Connection) doRequest(method, url string, body []byte) ([]byte, error) {
-	req, err := http.NewRequest(method, url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(context.TODO(), method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("invalid request: %w", err)
 	}

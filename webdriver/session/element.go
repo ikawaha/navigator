@@ -6,56 +6,18 @@ import (
 	"strings"
 )
 
-type elementResult struct {
-	Element    string `json:"ELEMENT"`
-	W3CElement string `json:"element-6066-11e4-a52e-4f735466cecf"`
-}
-
-func (er elementResult) ID() string {
-	if er.Element != "" {
-		return er.Element
-	}
-	return er.W3CElement
-}
-
+// Element represents a web element.
 type Element struct {
 	ID      string
 	Session *Session
 }
 
+// Send sends a message to the web driver service.
 func (e *Element) Send(method, pathname string, body, result any) error {
 	return e.Session.Send(method, path.Join("element", e.ID, pathname), body, result)
 }
 
-func (e *Element) GetID() string {
-	return e.ID
-}
-
-// XXX Session の GetElement() と同じでは？
-//func (e *Element) GetElement(selector Selector) (*Element, error) {
-//	var result elementResult
-//	if err := e.Send(Post, "element", selector, &result); err != nil {
-//		return nil, err
-//	}
-//	return &Element{
-//		ID:      result.ID(),
-//		Session: e.Session,
-//	}, nil
-//}
-
-// XXX Session の getElements() とおなじでは？
-//func (e *Element) getElements(selector Selector) ([]*Element, error) {
-//	var results []elementResult
-//	if err := e.Send(Post, "elements", selector, &results); err != nil {
-//		return nil, err
-//	}
-//	var elements []*Element
-//	for _, result := range results {
-//		elements = append(elements, &Element{ID: result.ID(), Session: e.Session})
-//	}
-//	return elements, nil
-//}
-
+// GetText gets a text of the element.
 func (e *Element) GetText() (string, error) {
 	var text string
 	if err := e.Send(Get, "text", nil, &text); err != nil {
@@ -64,6 +26,7 @@ func (e *Element) GetText() (string, error) {
 	return text, nil
 }
 
+// GetName gets a name of the element.
 func (e *Element) GetName() (string, error) {
 	var name string
 	if err := e.Send(Get, "name", nil, &name); err != nil {
@@ -72,6 +35,7 @@ func (e *Element) GetName() (string, error) {
 	return name, nil
 }
 
+// GetAttribute gets an attribute of the element.
 func (e *Element) GetAttribute(attribute string) (string, error) {
 	var value string
 	if err := e.Send(Get, path.Join("attribute", attribute), nil, &value); err != nil {
@@ -80,6 +44,7 @@ func (e *Element) GetAttribute(attribute string) (string, error) {
 	return value, nil
 }
 
+// GetCSS gets a CSS property of the element.
 func (e *Element) GetCSS(property string) (string, error) {
 	var value string
 	if err := e.Send(Get, path.Join("css", property), nil, &value); err != nil {
@@ -88,24 +53,28 @@ func (e *Element) GetCSS(property string) (string, error) {
 	return value, nil
 }
 
+// Click clicks the element.
 func (e *Element) Click() error {
 	return e.Send(Post, "click", nil, nil)
 }
 
+// Clear clears the element.
 func (e *Element) Clear() error {
 	return e.Send(Post, "clear", nil, nil)
 }
 
+// Value gets a value of the element.
 func (e *Element) Value(text string) error {
-	splitText := strings.Split(text, "")
+	vec := strings.Split(text, "")
 	req := struct {
 		Value []string `json:"value"`
 	}{
-		Value: splitText,
+		Value: vec,
 	}
 	return e.Send(Post, "value", req, nil)
 }
 
+// IsSelected returns true if the element is selected.
 func (e *Element) IsSelected() (bool, error) {
 	var selected bool
 	if err := e.Send(Get, "selected", nil, &selected); err != nil {
@@ -114,6 +83,7 @@ func (e *Element) IsSelected() (bool, error) {
 	return selected, nil
 }
 
+// IsDisplayed returns true if the element is displayed.
 func (e *Element) IsDisplayed() (bool, error) {
 	var displayed bool
 	if err := e.Send(Get, "displayed", nil, &displayed); err != nil {
@@ -122,6 +92,7 @@ func (e *Element) IsDisplayed() (bool, error) {
 	return displayed, nil
 }
 
+// IsEnabled returns true if the element is enabled.
 func (e *Element) IsEnabled() (bool, error) {
 	var enabled bool
 	if err := e.Send(Get, "enabled", nil, &enabled); err != nil {
@@ -130,10 +101,12 @@ func (e *Element) IsEnabled() (bool, error) {
 	return enabled, nil
 }
 
+// Submit submits the element.
 func (e *Element) Submit() error {
 	return e.Send(Post, "submit", nil, nil)
 }
 
+// IsEqualTo returns true if the elements is equal to the other.
 func (e *Element) IsEqualTo(other *Element) (bool, error) {
 	if other == nil {
 		return false, errors.New("nil element is invalid")
@@ -145,6 +118,7 @@ func (e *Element) IsEqualTo(other *Element) (bool, error) {
 	return equal, nil
 }
 
+// GetLocation gets a location of the element.
 func (e *Element) GetLocation() (x, y int, err error) {
 	var location struct {
 		X float64 `json:"x"`
@@ -156,6 +130,7 @@ func (e *Element) GetLocation() (x, y int, err error) {
 	return round(location.X), round(location.Y), nil
 }
 
+// GetSize gets a size of the element.
 func (e *Element) GetSize() (width, height int, err error) {
 	var size struct {
 		Width  float64 `json:"width"`
