@@ -27,9 +27,6 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - name: Set up Graphviz
-        uses: ts-graphviz/setup-graphviz@v1
-
       - name: Build
         run: go build -v ./...
 
