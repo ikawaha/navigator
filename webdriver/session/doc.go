@@ -1,2 +1,2 @@
-// Package session is a web session package to the web driver service.
+// Package session is the web session package to the web driver service.
 package session
