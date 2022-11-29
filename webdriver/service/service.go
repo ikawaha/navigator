@@ -90,7 +90,7 @@ func (s *Service) Stop() error {
 			return fmt.Errorf("failed to stop command: %w", err)
 		}
 	}
-	s.command.Wait()
+	_ = s.command.Wait()
 	s.command = nil
 	s.baseURL = ""
 	return nil
