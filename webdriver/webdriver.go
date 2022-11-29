@@ -24,10 +24,7 @@ func New(urlT string, commandT []string) *WebDriver {
 		HTTPClient: &http.Client{
 			Timeout: session.DefaultSessionClientTimeout,
 		},
-		service: &service.Service{
-			URLT:     urlT,
-			CommandT: commandT,
-		},
+		service:  service.New(urlT, commandT),
 		sessions: nil,
 	}
 }

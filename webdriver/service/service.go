@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -18,10 +17,17 @@ import (
 
 type Service struct {
 	mu       sync.Mutex
-	URLT     string   // url template eg. "http://localhost:{{.Port}}"
-	CommandT []string // command template eg. ["chromedriver", "--port={{.Port}}"]
+	urlT     string   // url template eg. "http://localhost:{{.Port}}"
+	commandT []string // command template eg. ["chromedriver", "--port={{.Port}}"]
 	baseURL  string
 	command  *exec.Cmd
+}
+
+func New(urlT string, commandT []string) *Service {
+	return &Service{
+		urlT:     urlT,
+		commandT: commandT,
+	}
 }
 
 func (s *Service) URL() string {
@@ -38,16 +44,16 @@ func (s *Service) Start(debug bool) error {
 
 	address, err := getFreeAddress()
 	if err != nil {
-		return fmt.Errorf("failed to locate a free port: %s", err)
+		return fmt.Errorf("failed to locate a free port: %w", err)
 	}
 
-	url, err := buildURL(s.URLT, address)
+	url, err := buildURL(s.urlT, address)
 	if err != nil {
 		return fmt.Errorf("failed to parse URL: %w", err)
 	}
 	s.baseURL = url
 
-	command, err := buildCommand(s.CommandT, address)
+	command, err := buildCommand(s.commandT, address)
 	if err != nil {
 		return fmt.Errorf("failed to parse command: %w", err)
 	}
@@ -97,20 +103,26 @@ type addressInfo struct {
 }
 
 func getFreeAddress() (addressInfo, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	var lc net.ListenConfig
+	l, err := lc.Listen(context.TODO(), "tcp", "localhost:0")
 	if err != nil {
 		return addressInfo{}, err
 	}
-	defer listener.Close()
+	defer l.Close()
 
-	address := listener.Addr().String()
-	addressParts := strings.SplitN(address, ":", 2)
+	address := l.Addr().String()
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return addressInfo{}, err
+	}
 	return addressInfo{
 		Address: address,
-		Host:    addressParts[0],
-		Port:    addressParts[1],
+		Host:    host,
+		Port:    port,
 	}, nil
 }
+
+const bootWait = 500 * time.Millisecond
 
 func (s *Service) WaitForBoot(timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -123,7 +135,7 @@ func (s *Service) WaitForBoot(timeout time.Duration) error {
 			case <-ctx.Done():
 				return
 			default:
-				time.Sleep(500 * time.Millisecond)
+				time.Sleep(bootWait)
 				up = s.checkStatus()
 			}
 		}

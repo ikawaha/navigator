@@ -2,39 +2,39 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"os/exec"
 	"text/template"
 )
 
 func buildURL(urlT string, address addressInfo) (string, error) {
-	urlTemplate, err := template.New("URL").Parse(urlT)
+	tpl, err := template.New("URL").Parse(urlT)
 	if err != nil {
 		return "", err
 	}
-	urlBuffer := &bytes.Buffer{}
-	if err := urlTemplate.Execute(urlBuffer, address); err != nil {
+	var b bytes.Buffer
+	if err := tpl.Execute(&b, address); err != nil {
 		return "", err
 	}
-	return urlBuffer.String(), nil
+	return b.String(), nil
 }
 
 func buildCommand(commandT []string, address addressInfo) (*exec.Cmd, error) {
 	if len(commandT) == 0 {
 		return nil, errors.New("empty command")
 	}
-
 	var command []string
-	for _, argument := range commandT {
-		argTemplate, err := template.New("command").Parse(argument)
+	for _, v := range commandT {
+		tpl, err := template.New("command").Parse(v)
 		if err != nil {
 			return nil, err
 		}
-		var argBuffer bytes.Buffer
-		if err := argTemplate.Execute(&argBuffer, address); err != nil {
+		var b bytes.Buffer
+		if err := tpl.Execute(&b, address); err != nil {
 			return nil, err
 		}
-		command = append(command, argBuffer.String())
+		command = append(command, b.String())
 	}
-	return exec.Command(command[0], command[1:]...), nil
+	return exec.CommandContext(context.TODO(), command[0], command[1:]...), nil
 }
