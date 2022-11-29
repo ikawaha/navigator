@@ -13,15 +13,9 @@ linters:
     - staticcheck
     - govet
     - revive
-#  disable:
-#    - maligned
-#    - exhaustive
-#    - noctx
-#    - asciicheck
-#    - sqlclosecheck
-#    - rowserrcheck
-#    - gosec
-#    - scopelint
+  disable:
+    - gosec
+    - scopelint
   presets:
     - bugs
     - unused
