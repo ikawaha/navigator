@@ -19,13 +19,13 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: setup-chromedriver
+      - name: Set up chromedriver
         uses: nanasess/setup-chromedriver@v1.1.0
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
-      - name: Set up Go 1.x
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
