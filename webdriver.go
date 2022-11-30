@@ -40,7 +40,7 @@ type WebDriver struct {
 //	navigator.New("http://{{.Address}}/wd/hub", command)
 func NewWebDriver(url string, command []string, options ...Option) *WebDriver {
 	driver := webdriver.New(url, command)
-	c := NewConfig(options)
+	c := newConfig(options)
 	if c.timeout != nil {
 		driver.Timeout = *c.timeout
 	}
@@ -125,8 +125,8 @@ func GeckoDriver(options ...Option) *WebDriver {
 // will always use the *http.Client provided to their WebDriver, or
 // http.DefaultClient if none was provided.
 func (w *WebDriver) NewPage(options ...Option) (*Page, error) {
-	c := NewMergedConfig(w.defaultConfig, options)
-	session, err := w.Open(c.Capabilities())
+	c := newMergedConfig(w.defaultConfig, options)
+	session, err := w.Open(c.capabilities())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to WebDriver: %w", err)
 	}

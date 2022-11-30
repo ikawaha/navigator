@@ -18,7 +18,7 @@ type config struct {
 	desiredCapabilities Capabilities
 }
 
-func NewConfig(options []Option) config {
+func newConfig(options []Option) config {
 	var c config
 	for _, option := range options {
 		option(&c)
@@ -26,14 +26,14 @@ func NewConfig(options []Option) config {
 	return c
 }
 
-func NewMergedConfig(c config, options []Option) config {
+func newMergedConfig(c config, options []Option) config {
 	for _, option := range options {
 		option(&c)
 	}
 	return c
 }
 
-func (c *config) Capabilities() Capabilities {
+func (c *config) capabilities() Capabilities {
 	merged := Capabilities{"acceptSslCerts": true}
 	for feature, value := range c.desiredCapabilities {
 		merged[feature] = value
