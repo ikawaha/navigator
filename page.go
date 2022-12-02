@@ -50,7 +50,7 @@ func (p *Page) Session() *session.Session {
 // Destroy closes any open browsers by ending the session.
 func (p *Page) Destroy() error {
 	if err := p.session.Delete(); err != nil {
-		return fmt.Errorf("failed to destroy session: %s", err)
+		return fmt.Errorf("failed to destroy session: %w", err)
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (p *Page) Navigate(url string) error {
 func (p *Page) GetCookies() ([]*http.Cookie, error) {
 	cookies, err := p.session.GetCookies()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get cookies: %s", err)
+		return nil, fmt.Errorf("failed to get cookies: %w", err)
 	}
 	var ret []*http.Cookie
 	for _, c := range cookies {
@@ -133,7 +133,7 @@ func (p *Page) SetCookie(cookie *http.Cookie) error {
 		HTTPOnly: cookie.HttpOnly,
 		Expiry:   float64(expiry),
 	}); err != nil {
-		return fmt.Errorf("failed to set cookie: %s", err)
+		return fmt.Errorf("failed to set cookie: %w", err)
 	}
 	return nil
 }
@@ -141,7 +141,7 @@ func (p *Page) SetCookie(cookie *http.Cookie) error {
 // DeleteCookie deletes a cookie on the page by name.
 func (p *Page) DeleteCookie(name string) error {
 	if err := p.session.DeleteCookie(name); err != nil {
-		return fmt.Errorf("failed to delete cookie %s: %s", name, err)
+		return fmt.Errorf("failed to delete cookie %s: %w", name, err)
 	}
 	return nil
 }
@@ -149,7 +149,7 @@ func (p *Page) DeleteCookie(name string) error {
 // ClearCookies deletes all cookies on the page.
 func (p *Page) ClearCookies() error {
 	if err := p.session.DeleteCookies(); err != nil {
-		return fmt.Errorf("failed to clear cookies: %s", err)
+		return fmt.Errorf("failed to clear cookies: %w", err)
 	}
 	return nil
 }
@@ -158,7 +158,7 @@ func (p *Page) ClearCookies() error {
 func (p *Page) URL() (string, error) {
 	url, err := p.session.GetURL()
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve URL: %s", err)
+		return "", fmt.Errorf("failed to retrieve URL: %w", err)
 	}
 	return url, nil
 }
@@ -167,10 +167,10 @@ func (p *Page) URL() (string, error) {
 func (p *Page) Size(width, height int) error {
 	window, err := p.session.GetWindow()
 	if err != nil {
-		return fmt.Errorf("failed to retrieve window: %s", err)
+		return fmt.Errorf("failed to retrieve window: %w", err)
 	}
 	if err := window.SetSize(width, height); err != nil {
-		return fmt.Errorf("failed to set window size: %s", err)
+		return fmt.Errorf("failed to set window size: %w", err)
 	}
 	return nil
 }
@@ -180,14 +180,14 @@ func (p *Page) Size(width, height int) error {
 func (p *Page) Screenshot(filename string) error {
 	absFilePath, err := filepath.Abs(filename)
 	if err != nil {
-		return fmt.Errorf("failed to find absolute path for filename: %s", err)
+		return fmt.Errorf("failed to find absolute path for filename: %w", err)
 	}
 	screenshot, err := p.session.GetScreenshot()
 	if err != nil {
-		return fmt.Errorf("failed to retrieve screenshot: %s", err)
+		return fmt.Errorf("failed to retrieve screenshot: %w", err)
 	}
 	if err := os.WriteFile(absFilePath, screenshot, 0666); err != nil {
-		return fmt.Errorf("failed to save screenshot: %s", err)
+		return fmt.Errorf("failed to save screenshot: %w", err)
 	}
 	return nil
 }
@@ -205,7 +205,7 @@ func (p *Page) Title() (string, error) {
 func (p *Page) HTML() (string, error) {
 	html, err := p.session.GetSource()
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve page HTML: %s", err)
+		return "", fmt.Errorf("failed to retrieve page HTML: %w", err)
 	}
 	return html, nil
 }
@@ -231,7 +231,7 @@ func (p *Page) RunScript(body string, arguments map[string]any, result any) erro
 	argumentList := strings.Join(keys, ", ")
 	cleanBody := fmt.Sprintf("return (function(%s) { %s; }).apply(this, arguments);", argumentList, body)
 	if err := p.session.Execute(cleanBody, values, result); err != nil {
-		return fmt.Errorf("failed to run script: %s", err)
+		return fmt.Errorf("failed to run script: %w", err)
 	}
 	return nil
 }
@@ -240,7 +240,7 @@ func (p *Page) RunScript(body string, arguments map[string]any, result any) erro
 func (p *Page) PopupText() (string, error) {
 	text, err := p.session.GetAlertText()
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve popup text: %s", err)
+		return "", fmt.Errorf("failed to retrieve popup text: %w", err)
 	}
 	return text, nil
 }
@@ -248,7 +248,7 @@ func (p *Page) PopupText() (string, error) {
 // EnterPopupText enters text into an open prompt popup.
 func (p *Page) EnterPopupText(text string) error {
 	if err := p.session.SetAlertText(text); err != nil {
-		return fmt.Errorf("failed to enter popup text: %s", err)
+		return fmt.Errorf("failed to enter popup text: %w", err)
 	}
 	return nil
 }
@@ -256,7 +256,7 @@ func (p *Page) EnterPopupText(text string) error {
 // ConfirmPopup confirms an alert, confirm, or prompt popup.
 func (p *Page) ConfirmPopup() error {
 	if err := p.session.AcceptAlert(); err != nil {
-		return fmt.Errorf("failed to confirm popup: %s", err)
+		return fmt.Errorf("failed to confirm popup: %w", err)
 	}
 	return nil
 }
@@ -264,7 +264,7 @@ func (p *Page) ConfirmPopup() error {
 // CancelPopup cancels an alert, confirm, or prompt popup.
 func (p *Page) CancelPopup() error {
 	if err := p.session.DismissAlert(); err != nil {
-		return fmt.Errorf("failed to cancel popup: %s", err)
+		return fmt.Errorf("failed to cancel popup: %w", err)
 	}
 	return nil
 }
@@ -272,7 +272,7 @@ func (p *Page) CancelPopup() error {
 // Forward navigates forward in history.
 func (p *Page) Forward() error {
 	if err := p.session.Forward(); err != nil {
-		return fmt.Errorf("failed to navigate forward in history: %s", err)
+		return fmt.Errorf("failed to navigate forward in history: %w", err)
 	}
 	return nil
 }
@@ -280,7 +280,7 @@ func (p *Page) Forward() error {
 // Back navigates backwards in history.
 func (p *Page) Back() error {
 	if err := p.session.Back(); err != nil {
-		return fmt.Errorf("failed to navigate backwards in history: %s", err)
+		return fmt.Errorf("failed to navigate backwards in history: %w", err)
 	}
 	return nil
 }
@@ -288,7 +288,7 @@ func (p *Page) Back() error {
 // Refresh refreshes the page.
 func (p *Page) Refresh() error {
 	if err := p.session.Refresh(); err != nil {
-		return fmt.Errorf("failed to refresh page: %s", err)
+		return fmt.Errorf("failed to refresh page: %w", err)
 	}
 	return nil
 }
@@ -300,7 +300,7 @@ func (p *Page) Refresh() error {
 // This method is not supported by PhantomJS. Please use SwitchToRootFrame instead.
 func (p *Page) SwitchToParentFrame() error {
 	if err := p.session.FrameParent(); err != nil {
-		return fmt.Errorf("failed to switch to parent frame: %s", err)
+		return fmt.Errorf("failed to switch to parent frame: %w", err)
 	}
 	return nil
 }
@@ -311,7 +311,7 @@ func (p *Page) SwitchToParentFrame() error {
 // as well.
 func (p *Page) SwitchToRootFrame() error {
 	if err := p.session.Frame(nil); err != nil {
-		return fmt.Errorf("failed to switch to original page frame: %s", err)
+		return fmt.Errorf("failed to switch to original page frame: %w", err)
 	}
 	return nil
 }
@@ -320,7 +320,7 @@ func (p *Page) SwitchToRootFrame() error {
 // (JavaScript `window.name` attribute).
 func (p *Page) SwitchToWindow(name string) error {
 	if err := p.session.SetWindowByName(name); err != nil {
-		return fmt.Errorf("failed to switch to named window: %s", err)
+		return fmt.Errorf("failed to switch to named window: %w", err)
 	}
 	return nil
 }
@@ -329,7 +329,7 @@ func (p *Page) SwitchToWindow(name string) error {
 func (p *Page) NextWindow() error {
 	windows, err := p.session.GetWindows()
 	if err != nil {
-		return fmt.Errorf("failed to find available windows: %s", err)
+		return fmt.Errorf("failed to find available windows: %w", err)
 	}
 
 	var windowIDs []string
@@ -342,7 +342,7 @@ func (p *Page) NextWindow() error {
 
 	activeWindow, err := p.session.GetWindow()
 	if err != nil {
-		return fmt.Errorf("failed to find active window: %s", err)
+		return fmt.Errorf("failed to find active window: %w", err)
 	}
 
 	for position, windowID := range windowIDs {
@@ -353,7 +353,7 @@ func (p *Page) NextWindow() error {
 	}
 
 	if err := p.session.SetWindow(activeWindow); err != nil {
-		return fmt.Errorf("failed to change active window: %s", err)
+		return fmt.Errorf("failed to change active window: %w", err)
 	}
 
 	return nil
@@ -362,7 +362,7 @@ func (p *Page) NextWindow() error {
 // CloseWindow closes the active window.
 func (p *Page) CloseWindow() error {
 	if err := p.session.DeleteWindow(); err != nil {
-		return fmt.Errorf("failed to close active window: %s", err)
+		return fmt.Errorf("failed to close active window: %w", err)
 	}
 	return nil
 }
@@ -371,7 +371,7 @@ func (p *Page) CloseWindow() error {
 func (p *Page) WindowCount() (int, error) {
 	windows, err := p.session.GetWindows()
 	if err != nil {
-		return 0, fmt.Errorf("failed to find available windows: %s", err)
+		return 0, fmt.Errorf("failed to find available windows: %w", err)
 	}
 	return len(windows), nil
 }
@@ -380,7 +380,7 @@ func (p *Page) WindowCount() (int, error) {
 func (p *Page) LogTypes() ([]string, error) {
 	types, err := p.session.GetLogTypes()
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve log types: %s", err)
+		return nil, fmt.Errorf("failed to retrieve log types: %w", err)
 	}
 	return types, nil
 }
@@ -397,7 +397,7 @@ func (p *Page) ReadNewLogs(logType string) ([]Log, error) {
 	}
 	clientLogs, err := p.session.NewLogs(logType)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve logs: %s", err)
+		return nil, fmt.Errorf("failed to retrieve logs: %w", err)
 	}
 	var logs []Log
 	for _, v := range clientLogs {
@@ -443,7 +443,7 @@ func (p *Page) MoveMouseBy(xOffset, yOffset int) error {
 		X: xOffset,
 		Y: yOffset,
 	}); err != nil {
-		return fmt.Errorf("failed to move mouse: %s", err)
+		return fmt.Errorf("failed to move mouse: %w", err)
 	}
 	return nil
 }
@@ -452,7 +452,7 @@ func (p *Page) MoveMouseBy(xOffset, yOffset int) error {
 // position.
 func (p *Page) DoubleClick() error {
 	if err := p.session.DoubleClick(); err != nil {
-		return fmt.Errorf("failed to double click: %s", err)
+		return fmt.Errorf("failed to double click: %w", err)
 	}
 
 	return nil

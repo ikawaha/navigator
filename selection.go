@@ -60,7 +60,7 @@ func (s *Selection) Elements() ([]*session.Element, error) {
 func (s *Selection) Count() (int, error) {
 	elements, err := s.getElements()
 	if err != nil {
-		return 0, fmt.Errorf("failed to select elements from %s: %s", s, err)
+		return 0, fmt.Errorf("failed to select elements from %s: %w", s, err)
 	}
 
 	return len(elements), nil
@@ -80,17 +80,17 @@ func (s *Selection) EqualsElement(other any) (bool, error) {
 
 	selectedElement, err := s.getElementExactlyOne()
 	if err != nil {
-		return false, fmt.Errorf("failed to select element from %s: %s", s, err)
+		return false, fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
 
 	otherElement, err := otherSelection.getElementExactlyOne()
 	if err != nil {
-		return false, fmt.Errorf("failed to select element from %s: %s", other, err)
+		return false, fmt.Errorf("failed to select element from %s: %w", other, err)
 	}
 
 	equal, err := selectedElement.IsEqualTo(otherElement)
 	if err != nil {
-		return false, fmt.Errorf("failed to compare %s to %s: %s", s, other, err)
+		return false, fmt.Errorf("failed to compare %s to %s: %w", s, other, err)
 	}
 
 	return equal, nil
@@ -100,10 +100,10 @@ func (s *Selection) EqualsElement(other any) (bool, error) {
 func (s *Selection) MouseToElement() error {
 	selectedElement, err := s.getElementExactlyOne()
 	if err != nil {
-		return fmt.Errorf("failed to select element from %s: %s", s, err)
+		return fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
 	if err := s.session.MoveTo(selectedElement, nil); err != nil {
-		return fmt.Errorf("failed to move mouse to element for %s: %s", s, err)
+		return fmt.Errorf("failed to move mouse to element for %s: %w", s, err)
 	}
 
 	return nil

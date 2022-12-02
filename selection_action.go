@@ -13,7 +13,7 @@ type actionsFunc func(*session.Element) error
 func (s *Selection) forEachElement(actions actionsFunc) error {
 	elements, err := s.getElementsAtLeastOne()
 	if err != nil {
-		return fmt.Errorf("failed to select elements from %s: %s", s, err)
+		return fmt.Errorf("failed to select elements from %s: %w", s, err)
 	}
 	for _, element := range elements {
 		if err := actions(element); err != nil {
@@ -27,7 +27,7 @@ func (s *Selection) forEachElement(actions actionsFunc) error {
 func (s *Selection) Click() error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := selectedElement.Click(); err != nil {
-			return fmt.Errorf("failed to click on %s: %s", s, err)
+			return fmt.Errorf("failed to click on %s: %w", s, err)
 		}
 		return nil
 	})
@@ -37,10 +37,10 @@ func (s *Selection) Click() error {
 func (s *Selection) DoubleClick() error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := s.session.MoveTo(selectedElement, nil); err != nil {
-			return fmt.Errorf("failed to move mouse to %s: %s", s, err)
+			return fmt.Errorf("failed to move mouse to %s: %w", s, err)
 		}
 		if err := s.session.DoubleClick(); err != nil {
-			return fmt.Errorf("failed to double-click on %s: %s", s, err)
+			return fmt.Errorf("failed to double-click on %s: %w", s, err)
 		}
 		return nil
 	})
@@ -50,7 +50,7 @@ func (s *Selection) DoubleClick() error {
 func (s *Selection) Clear() error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := selectedElement.Clear(); err != nil {
-			return fmt.Errorf("failed to clear %s: %s", s, err)
+			return fmt.Errorf("failed to clear %s: %w", s, err)
 		}
 		return nil
 	})
@@ -60,10 +60,10 @@ func (s *Selection) Clear() error {
 func (s *Selection) Fill(text string) error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := selectedElement.Clear(); err != nil {
-			return fmt.Errorf("failed to clear %s: %s", s, err)
+			return fmt.Errorf("failed to clear %s: %w", s, err)
 		}
 		if err := selectedElement.Value(text); err != nil {
-			return fmt.Errorf("failed to enter text into %s: %s", s, err)
+			return fmt.Errorf("failed to enter text into %s: %w", s, err)
 		}
 		return nil
 	})
@@ -75,25 +75,25 @@ func (s *Selection) Fill(text string) error {
 func (s *Selection) UploadFile(filename string) error {
 	absFilePath, err := filepath.Abs(filename)
 	if err != nil {
-		return fmt.Errorf("failed to find absolute path for filename: %s", err)
+		return fmt.Errorf("failed to find absolute path for filename: %w", err)
 	}
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		tagName, err := selectedElement.GetName()
 		if err != nil {
-			return fmt.Errorf("failed to determine tag name of %s: %s", s, err)
+			return fmt.Errorf("failed to determine tag name of %s: %w", s, err)
 		}
 		if tagName != "input" {
 			return fmt.Errorf("element for %s is not an input element", s)
 		}
 		inputType, err := selectedElement.GetAttribute("type")
 		if err != nil {
-			return fmt.Errorf("failed to determine type attribute of %s: %s", s, err)
+			return fmt.Errorf("failed to determine type attribute of %s: %w", s, err)
 		}
 		if inputType != "file" {
 			return fmt.Errorf("element for %s is not a file uploader", s)
 		}
 		if err := selectedElement.Value(absFilePath); err != nil {
-			return fmt.Errorf("failed to enter text into %s: %s", s, err)
+			return fmt.Errorf("failed to enter text into %s: %w", s, err)
 		}
 		return nil
 	})
@@ -113,7 +113,7 @@ func (s *Selection) setChecked(checked bool) error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		elementType, err := selectedElement.GetAttribute("type")
 		if err != nil {
-			return fmt.Errorf("failed to retrieve type attribute of %s: %s", s, err)
+			return fmt.Errorf("failed to retrieve type attribute of %s: %w", s, err)
 		}
 
 		if elementType != "checkbox" {
@@ -122,12 +122,12 @@ func (s *Selection) setChecked(checked bool) error {
 
 		elementChecked, err := selectedElement.IsSelected()
 		if err != nil {
-			return fmt.Errorf("failed to retrieve state of %s: %s", s, err)
+			return fmt.Errorf("failed to retrieve state of %s: %w", s, err)
 		}
 
 		if elementChecked != checked {
 			if err := selectedElement.Click(); err != nil {
-				return fmt.Errorf("failed to click on %s: %s", s, err)
+				return fmt.Errorf("failed to click on %s: %w", s, err)
 			}
 		}
 		return nil
@@ -142,7 +142,7 @@ func (s *Selection) Select(text string) error {
 		optionToSelect := selector{Type: xPathType, Value: optionXPath}
 		options, err := selectedElement.Session.GetElements(optionToSelect.SessionSelector())
 		if err != nil {
-			return fmt.Errorf("failed to select specified option for %s: %s", s, err)
+			return fmt.Errorf("failed to select specified option for %s: %w", s, err)
 		}
 
 		if len(options) == 0 {
@@ -151,7 +151,7 @@ func (s *Selection) Select(text string) error {
 
 		for _, option := range options {
 			if err := option.Click(); err != nil {
-				return fmt.Errorf(`failed to click on option with text "%s" for %s: %s`, text, s, err)
+				return fmt.Errorf(`failed to click on option with text "%s" for %s: %w`, text, s, err)
 			}
 		}
 		return nil
@@ -163,7 +163,7 @@ func (s *Selection) Select(text string) error {
 func (s *Selection) Submit() error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := selectedElement.Submit(); err != nil {
-			return fmt.Errorf("failed to submit %s: %s", s, err)
+			return fmt.Errorf("failed to submit %s: %w", s, err)
 		}
 		return nil
 	})
@@ -185,7 +185,7 @@ func (s *Selection) Tap(tap event.Tap) error {
 
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := touchFunc(selectedElement); err != nil {
-			return fmt.Errorf("failed to %s on %s: %s", tap, s, err)
+			return fmt.Errorf("failed to %s on %s: %w", tap, s, err)
 		}
 		return nil
 	})
@@ -209,10 +209,10 @@ func (s *Selection) Touch(touch event.Touch) error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		x, y, err := selectedElement.GetLocation()
 		if err != nil {
-			return fmt.Errorf("failed to retrieve location of %s: %s", s, err)
+			return fmt.Errorf("failed to retrieve location of %s: %w", s, err)
 		}
 		if err := touchFunc(x, y); err != nil {
-			return fmt.Errorf("failed to flick finger on %s: %s", s, err)
+			return fmt.Errorf("failed to flick finger on %s: %w", s, err)
 		}
 		return nil
 	})
@@ -223,11 +223,11 @@ func (s *Selection) Touch(touch event.Touch) error {
 func (s *Selection) FlickFinger(xOffset, yOffset int, speed uint) error {
 	selectedElement, err := s.getElementExactlyOne()
 	if err != nil {
-		return fmt.Errorf("failed to select element from %s: %s", s, err)
+		return fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
 
 	if err := s.session.TouchFlick(selectedElement, session.XYOffset{X: xOffset, Y: yOffset}, session.ScalarSpeed(speed)); err != nil {
-		return fmt.Errorf("failed to flick finger on %s: %s", s, err)
+		return fmt.Errorf("failed to flick finger on %s: %w", s, err)
 	}
 	return nil
 }
@@ -237,11 +237,11 @@ func (s *Selection) FlickFinger(xOffset, yOffset int, speed uint) error {
 func (s *Selection) ScrollFinger(xOffset, yOffset int) error {
 	selectedElement, err := s.getElementExactlyOne()
 	if err != nil {
-		return fmt.Errorf("failed to select element from %s: %s", s, err)
+		return fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
 
 	if err := s.session.TouchScroll(selectedElement, session.XYOffset{X: xOffset, Y: yOffset}); err != nil {
-		return fmt.Errorf("failed to scroll finger on %s: %s", s, err)
+		return fmt.Errorf("failed to scroll finger on %s: %w", s, err)
 	}
 	return nil
 }
@@ -249,7 +249,7 @@ func (s *Selection) ScrollFinger(xOffset, yOffset int) error {
 func (s *Selection) SendKeys(key string) error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := selectedElement.Value(key); err != nil {
-			return fmt.Errorf("failed to send key %s on %s: %s", key, s, err)
+			return fmt.Errorf("failed to send key %s on %s: %w", key, s, err)
 		}
 		return nil
 	})
@@ -261,10 +261,10 @@ func (s *Selection) SendKeys(key string) error {
 func (s *Selection) SwitchToFrame() error {
 	selectedElement, err := s.getElementExactlyOne()
 	if err != nil {
-		return fmt.Errorf("failed to select element from %s: %s", s, err)
+		return fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
 	if err := s.session.Frame(selectedElement); err != nil {
-		return fmt.Errorf("failed to switch to frame referred to by %s: %s", s, err)
+		return fmt.Errorf("failed to switch to frame referred to by %s: %w", s, err)
 	}
 	return nil
 }
