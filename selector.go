@@ -51,6 +51,7 @@ func (s selector) SessionSelector() session.Selector {
 	}
 }
 
+//nolint:exhaustive
 func (s selector) selectorType() string {
 	switch s.Type {
 	case cssType:
@@ -69,8 +70,9 @@ func (s selector) selectorType() string {
 		return "-android uiautomator"
 	case iosAutType:
 		return "-ios uiautomation"
+	default:
+		return "xpath"
 	}
-	return "xpath"
 }
 
 const (
@@ -78,12 +80,14 @@ const (
 	buttonXPath = `//input[@type="submit" or @type="button"][normalize-space(@value)="%s"] | //button[normalize-space()="%[1]s"]`
 )
 
+//nolint:exhaustive
 func (s selector) value() string {
 	switch s.Type {
 	case labelType:
 		return fmt.Sprintf(labelXPath, s.Value)
 	case buttonType:
 		return fmt.Sprintf(buttonXPath, s.Value)
+	default:
+		return s.Value
 	}
-	return s.Value
 }
