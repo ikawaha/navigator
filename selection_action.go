@@ -246,6 +246,7 @@ func (s *Selection) ScrollFinger(xOffset, yOffset int) error {
 	return nil
 }
 
+// SendKeys sends key events to the selected elements.
 func (s *Selection) SendKeys(key string) error {
 	return s.forEachElement(func(selectedElement *session.Element) error {
 		if err := selectedElement.Value(key); err != nil {

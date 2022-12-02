@@ -7,6 +7,7 @@ import (
 	"github.com/ikawaha/navigator/webdriver/session"
 )
 
+// Selectable represents a set of selectable elements.
 type Selectable struct {
 	session   *session.Session
 	selectors selectors
