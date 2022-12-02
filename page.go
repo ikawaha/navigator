@@ -186,7 +186,7 @@ func (p *Page) Screenshot(filename string) error {
 	if err != nil {
 		return fmt.Errorf("failed to retrieve screenshot: %w", err)
 	}
-	if err := os.WriteFile(absFilePath, screenshot, 0666); err != nil {
+	if err := os.WriteFile(absFilePath, screenshot, 0o666); err != nil {
 		return fmt.Errorf("failed to save screenshot: %w", err)
 	}
 	return nil
