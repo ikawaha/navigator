@@ -160,67 +160,53 @@ func (s *Selectable) getElementExactlyOne() (*session.Element, error) {
 	return elements[0], nil
 }
 
-// XXX ???
 func (s *Selectable) getElements() ([]*session.Element, error) {
 	if len(s.selectors) == 0 {
 		return nil, errors.New("empty selection")
 	}
-	lastElements, err := retrieveElements(s.session, s.selectors[0])
-	if err != nil {
-		return nil, err
-	}
-	for _, selector := range s.selectors[1:] {
-		var elements []*session.Element
-		for _, element := range lastElements {
-			subElements, err := retrieveElements(element.Session, selector)
+	ret := []*session.Element{{Session: s.session}} // initial dummy element
+	for _, sl := range s.selectors {
+		var next []*session.Element
+		for _, el := range ret {
+			els, err := retrieveElements(el, sl)
 			if err != nil {
 				return nil, err
 			}
-			elements = append(elements, subElements...)
+			next = append(next, els...)
 		}
-		lastElements = elements
+		ret = next
 	}
-	return lastElements, nil
+	return ret, nil
 }
 
-// XXX refactoring ???
-func retrieveElements(client *session.Session, selector selector) ([]*session.Element, error) {
-	if selector.Single {
-		elements, err := client.GetElements(selector.SessionSelector())
+func retrieveElements(element *session.Element, selector selector) ([]*session.Element, error) {
+	switch {
+	case selector.Single:
+		els, err := element.GetElements(selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
-		if len(elements) == 0 {
+		if len(els) == 0 {
 			return nil, errors.New("element not found")
-		} else if len(elements) > 1 {
+		} else if len(els) > 1 {
 			return nil, errors.New("ambiguous find")
 		}
-		return []*session.Element{elements[0]}, nil
-	}
-
-	if selector.Indexed && selector.Index > 0 {
-		elements, err := client.GetElements(selector.SessionSelector())
+		return els[:1], nil
+	case selector.Indexed && selector.Index == 0:
+		el, err := element.GetElement(selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
-		if selector.Index >= len(elements) {
+		return []*session.Element{el}, nil
+	case selector.Indexed && selector.Index > 0:
+		els, err := element.GetElements(selector.SessionSelector())
+		if err != nil {
+			return nil, err
+		}
+		if selector.Index < 0 || selector.Index >= len(els) {
 			return nil, errors.New("element index out of range")
 		}
-
-		return []*session.Element{elements[selector.Index]}, nil
+		return []*session.Element{els[selector.Index]}, nil
 	}
-
-	if selector.Indexed && selector.Index == 0 {
-		element, err := client.GetElement(selector.SessionSelector())
-		if err != nil {
-			return nil, err
-		}
-		return []*session.Element{element}, nil
-	}
-
-	elements, err := client.GetElements(selector.SessionSelector())
-	if err != nil {
-		return nil, err
-	}
-	return elements, nil
+	return element.GetElements(selector.SessionSelector())
 }

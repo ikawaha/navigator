@@ -14,7 +14,33 @@ type Element struct {
 
 // Send sends a message to the web driver service.
 func (e *Element) Send(method, pathname string, body, result any) error {
-	return e.Session.Send(method, path.Join("element", e.ID, pathname), body, result)
+	if e.ID != "" {
+		pathname = path.Join("element", e.ID, pathname)
+	}
+	return e.Session.Send(method, pathname, body, result)
+}
+
+// GetElement gets an element by the selector.
+func (e *Element) GetElement(selector Selector) (*Element, error) {
+	var result elementResult
+	if err := e.Send("POST", "element", selector, &result); err != nil {
+		return nil, err
+	}
+
+	return &Element{result.ID(), e.Session}, nil
+}
+
+// GetElements gets elements by the selector.
+func (e *Element) GetElements(selector Selector) ([]*Element, error) {
+	var results []elementResult
+	if err := e.Send("POST", "elements", selector, &results); err != nil {
+		return nil, err
+	}
+	elements := make([]*Element, len(results))
+	for i, result := range results {
+		elements[i] = &Element{result.ID(), e.Session}
+	}
+	return elements, nil
 }
 
 // GetText gets a text of the element.
@@ -63,7 +89,7 @@ func (e *Element) Clear() error {
 	return e.Send(Post, "clear", nil, nil)
 }
 
-// Value gets a value of the element.
+// Value sends keys corresponding to the text.
 func (e *Element) Value(text string) error {
 	vec := strings.Split(text, "")
 	req := struct {

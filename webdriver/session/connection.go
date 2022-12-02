@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -97,7 +96,8 @@ func (c *Connection) Send(method string, pathname string, body, result any) erro
 	}
 	path := strings.TrimSuffix(c.sessionURL+"/"+pathname, "/")
 
-	log.Println(path) // XXX
+	//log.Println(path)        // XXX
+	//log.Println(string(req)) //XXX
 
 	resp, err := c.doRequest(method, path, req)
 	if err != nil {

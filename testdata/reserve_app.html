@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>予約情報入力</title>
+  <link href='css/custom.css' rel='stylesheet' type='text/css'>
+</head>
+
+<body  class="input_form">
+
+<div class="container">
+  <h1>予約フォーム</h1>
+
+  <div id="slide1">
+    <form id="reserve_info" class="well" action="./check_info.html">
+      <h3>宿泊日</h3>
+      <input id="reserve_year" name="reserve_y" type="text" class="span4" maxlength="4" style="width:50px">年
+      <input id="reserve_month" name="reserve_m" type="text" class="span4" maxlength="2" style="width:20px">月
+      <input id="reserve_day" name="reserve_d" type="text" class="span4" maxlength="2" style="width:20px">日　から
+      <input id="reserve_term" name="reserve_t" type="text" class="span4" maxlength="1" style="width:20px" value="1">泊
+      <h3>人数</h3>
+      <input id="headcount" name="hc" type="text" class="span4" maxlength="1" style="width:20px" value="1">人
+      <h3 id="breakfast">朝食バイキング</h3>
+      <input id="breakfast_on" name="bf" type="radio" class="span4" maxlength="1" style="width:20px" value="on" checked><span id="breakfast_on_text">あり</span>
+      <input id="breakfast_off" name="bf" type="radio" class="span4" maxlength="1" style="width:20px" value="off"><span id="breakfast_off_text">なし 　おひとり様1000円</span>
+      <h3>プラン</h3>
+      <input id="plan_a" name="plan_a" type="checkbox" class="span4" maxlength="1" style="width:20px">昼からチェックインプラン
+      <input id="plan_b" name="plan_b" type="checkbox" class="span4" maxlength="1" style="width:20px">お得な観光プラン
+      <br>
+      <a href="javascript:alert('未実装')">各プランの詳細</a>
+      <h3>お名前</h3>
+      <input id="guestname" name="gname" type="text" class="span4" maxlength="50" style="width:150px">
+      <hr>
+      <button id="goto_next" type="sender" class="btn">次へ</button>
+
+    </form>
+  </div>
+</div>
+<!-- /container -->
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="js/mode.js"></script>
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap-transition.js"></script>
+<script src="js/bootstrap-carousel.js"></script>
+<script src="js/bootstrap-alert.js"></script>
+<script src="js/bootstrap-modal.js"></script>
+<script src="js/bootstrap-dropdown.js"></script>
+<script src="js/bootstrap-scrollspy.js"></script>
+<script src="js/bootstrap-tab.js"></script>
+<script src="js/bootstrap-tooltip.js"></script>
+<script src="js/bootstrap-popover.js"></script>
+<script src="js/bootstrap-button.js"></script>
+<script src="js/bootstrap-collapse.js"></script>
+<script src="js/bootstrap-typeahead.js"></script>
+<script src="js/bootstrap-datepicker.js"></script>
+<script src="js/jquery-ui-1.8.18.custom.min.js"></script>
+<script src="js/jquery.smooth-scroll.min.js"></script>
+<!-- if you need spiner UI, uncommentout here and init() part;
+<script src="js/jquery.ui.widget.js"></script>
+<script src="js/jquery.ui.spinner.js"></script>
+-->
+<script src="js/lightbox.js"></script>
+<script>
+    $('.carousel').carousel({
+        interval: 5000
+    })
+    $(function() { //init()
+        now = new Date();
+        $("#datePick").val(now.getFullYear() + "/" + (now.getMonth() + 1) + "/" + now.getDate()); //sync picker date
+        $("#reserve_year").val(now.getFullYear());
+        $("#reserve_month").val(now.getMonth() + 1);
+        $("#reserve_day").val(now.getDate());
+        $('#datePick').datepicker({
+            format: 'yyyy/mm/dd'
+        })
+            .on('changeDate', function() { //sync picker date at onchange
+                console.log($("#datePick").val().split("/")[1]);
+                $("#reserve_year").val($("#datePick").val().split("/")[0]);
+                $("#reserve_month").val($("#datePick").val().split("/")[1]);
+                $("#reserve_day").val($("#datePick").val().split("/")[2]);
+            });
+        if (simpleSiteMode) {
+            $("#breakfast").hide();
+            $("#breakfast_on_text").hide();
+            $("#breakfast_off_text").hide();
+            $("#breakfast_off").attr("checked", true );
+            $("#breakfast_on").hide();
+            $("#breakfast_off").hide();
+        }
+    });
+</script>
+</body>
+
+</html>
