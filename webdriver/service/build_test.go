@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 )
 
@@ -135,7 +136,7 @@ func Test_buildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := buildCommand(tt.args.commandT, tt.args.address)
+			got, err := buildCommand(context.Background(), tt.args.commandT, tt.args.address)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("buildCommand() error = %v, wantErr %v", err, tt.wantErr)

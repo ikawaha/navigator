@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"path"
 )
 
@@ -12,7 +13,12 @@ type Window struct {
 
 // Send sends the message to the window.
 func (w *Window) Send(method, pathname string, body, result any) error {
-	return w.Session.Send(method, path.Join("window", w.ID, pathname), body, result)
+	return w.SendWithContext(context.Background(), method, pathname, body, result)
+}
+
+// SendWithContext sends the message to the window.
+func (w *Window) SendWithContext(ctx context.Context, method, pathname string, body, result any) error {
+	return w.Session.Send(ctx, method, path.Join("window", w.ID, pathname), body, result)
 }
 
 type widthHeightRequest struct {

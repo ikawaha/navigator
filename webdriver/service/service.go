@@ -130,8 +130,8 @@ func getFreeAddress(ctx context.Context) (addressInfo, error) {
 const bootWait = 500 * time.Millisecond
 
 // WaitForBoot waits until the service starts.
-func (s *Service) WaitForBoot(timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+func (s *Service) WaitForBoot(ctx context.Context, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	wakeup := make(chan struct{})
 	go func(ctx context.Context) {

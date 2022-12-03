@@ -89,7 +89,7 @@ func openSession(client *http.Client, serviceURL string, body io.Reader) (sessio
 }
 
 // Send sends the message to the browser.
-func (c *Connection) Send(method string, pathname string, body, result any) error {
+func (c *Connection) Send(ctx context.Context, method string, pathname string, body, result any) error {
 	req, err := bodyToJSON(body)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (c *Connection) Send(method string, pathname string, body, result any) erro
 	// log.Println(path)        // XXX
 	// log.Println(string(req)) //XXX
 
-	resp, err := c.doRequest(method, path, req)
+	resp, err := c.doRequest(ctx, method, path, req)
 	if err != nil {
 		return err
 	}
@@ -131,8 +131,8 @@ func responseToValue(src []byte, dst any) error {
 	return nil
 }
 
-func (c *Connection) doRequest(method, url string, body []byte) ([]byte, error) {
-	req, err := http.NewRequestWithContext(context.TODO(), method, url, bytes.NewReader(body))
+func (c *Connection) doRequest(ctx context.Context, method, url string, body []byte) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("invalid request: %w", err)
 	}

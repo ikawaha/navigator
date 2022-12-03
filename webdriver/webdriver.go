@@ -56,7 +56,7 @@ func (w *WebDriver) Start(ctx context.Context) error {
 	if err := w.service.Start(ctx, w.Debug); err != nil {
 		return fmt.Errorf("failed to start service: %w", err)
 	}
-	if err := w.service.WaitForBoot(w.Timeout); err != nil {
+	if err := w.service.WaitForBoot(ctx, w.Timeout); err != nil {
 		_ = w.service.Stop()
 		return err
 	}

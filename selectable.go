@@ -1,6 +1,7 @@
 package navigator
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -139,8 +140,8 @@ func (s *Selectable) String() string {
 	return fmt.Sprintf("%+v", ss)
 }
 
-func (s *Selectable) getElementsAtLeastOne() ([]*session.Element, error) {
-	elements, err := s.getElements()
+func (s *Selectable) getElementsAtLeastOne(ctx context.Context) ([]*session.Element, error) {
+	elements, err := s.getElements(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +151,8 @@ func (s *Selectable) getElementsAtLeastOne() ([]*session.Element, error) {
 	return elements, nil
 }
 
-func (s *Selectable) getElementExactlyOne() (*session.Element, error) {
-	elements, err := s.getElementsAtLeastOne()
+func (s *Selectable) getElementExactlyOne(ctx context.Context) (*session.Element, error) {
+	elements, err := s.getElementsAtLeastOne(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +162,7 @@ func (s *Selectable) getElementExactlyOne() (*session.Element, error) {
 	return elements[0], nil
 }
 
-func (s *Selectable) getElements() ([]*session.Element, error) {
+func (s *Selectable) getElements(ctx context.Context) ([]*session.Element, error) {
 	if len(s.selectors) == 0 {
 		return nil, errors.New("empty selection")
 	}
@@ -169,7 +170,7 @@ func (s *Selectable) getElements() ([]*session.Element, error) {
 	for _, sl := range s.selectors {
 		var next []*session.Element
 		for _, el := range ret {
-			els, err := retrieveElements(el, sl)
+			els, err := retrieveElements(ctx, el, sl)
 			if err != nil {
 				return nil, err
 			}
@@ -180,10 +181,10 @@ func (s *Selectable) getElements() ([]*session.Element, error) {
 	return ret, nil
 }
 
-func retrieveElements(element *session.Element, selector selector) ([]*session.Element, error) {
+func retrieveElements(ctx context.Context, element *session.Element, selector selector) ([]*session.Element, error) {
 	switch {
 	case selector.Single:
-		els, err := element.GetElements(selector.SessionSelector())
+		els, err := element.GetElementsWithContext(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
@@ -194,13 +195,13 @@ func retrieveElements(element *session.Element, selector selector) ([]*session.E
 		}
 		return els[:1], nil
 	case selector.Indexed && selector.Index == 0:
-		el, err := element.GetElement(selector.SessionSelector())
+		el, err := element.GetElementWithContext(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
 		return []*session.Element{el}, nil
 	case selector.Indexed && selector.Index > 0:
-		els, err := element.GetElements(selector.SessionSelector())
+		els, err := element.GetElementsWithContext(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
@@ -209,5 +210,5 @@ func retrieveElements(element *session.Element, selector selector) ([]*session.E
 		}
 		return []*session.Element{els[selector.Index]}, nil
 	}
-	return element.GetElements(selector.SessionSelector())
+	return element.GetElementsWithContext(ctx, selector.SessionSelector())
 }
