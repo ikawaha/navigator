@@ -556,7 +556,7 @@ func (p *Page) MoveMouseBy(xOffset, yOffset int) error {
 
 // MoveMouseByWithContext moves the mouse by the provided offset.
 func (p *Page) MoveMouseByWithContext(ctx context.Context, xOffset, yOffset int) error {
-	if err := p.session.MoveTo(nil, session.XYOffset{
+	if err := p.session.MoveToWithContext(ctx, nil, session.XYOffset{
 		X: xOffset,
 		Y: yOffset,
 	}); err != nil {
