@@ -1,7 +1,6 @@
 package navigator
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -30,7 +29,6 @@ func TestChromeDriver(t *testing.T) {
 		if err := r.ParseForm(); err != nil {
 			t.Fatalf("r.ParseForm() failed: unexpected error, %v", err)
 		}
-		fmt.Println("!!!!", r.Form)
 		want := map[string]string{
 			"reserve_y": "2011",
 			"reserve_m": "12",

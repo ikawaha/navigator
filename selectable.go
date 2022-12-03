@@ -14,13 +14,13 @@ type Selectable struct {
 }
 
 // Find finds exactly one element by CSS selector.
-func (s *Selectable) Find(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(cssType, selector).Single())
+func (s *Selectable) Find(css string) *Selection {
+	return newSelection(s.session, s.selectors.Append(cssType, css).Single())
 }
 
 // FindByXPath finds exactly one element by XPath selector.
-func (s *Selectable) FindByXPath(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(xPathType, selector).Single())
+func (s *Selectable) FindByXPath(xpath string) *Selection {
+	return newSelection(s.session, s.selectors.Append(xPathType, xpath).Single())
 }
 
 // FindByLink finds exactly one anchor element by its text content.
@@ -45,8 +45,8 @@ func (s *Selectable) FindByName(name string) *Selection {
 }
 
 // FindByClass finds exactly one element with a given CSS class.
-func (s *Selectable) FindByClass(text string) *Selection {
-	return newSelection(s.session, s.selectors.Append(classType, text).Single())
+func (s *Selectable) FindByClass(class string) *Selection {
+	return newSelection(s.session, s.selectors.Append(classType, class).Single())
 }
 
 // FindByID finds exactly one element that has the given ID.
@@ -55,13 +55,13 @@ func (s *Selectable) FindByID(id string) *Selection {
 }
 
 // First finds the first element by CSS selector.
-func (s *Selectable) First(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(cssType, selector).At(0))
+func (s *Selectable) First(css string) *Selection {
+	return newSelection(s.session, s.selectors.Append(cssType, css).At(0))
 }
 
 // FirstByXPath finds the first element by XPath selector.
-func (s *Selectable) FirstByXPath(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(xPathType, selector).At(0))
+func (s *Selectable) FirstByXPath(xpath string) *Selection {
+	return newSelection(s.session, s.selectors.Append(xPathType, xpath).At(0))
 }
 
 // FirstByLink finds the first anchor element by its text content.
@@ -86,18 +86,18 @@ func (s *Selectable) FirstByName(name string) *Selection {
 }
 
 // FirstByClass finds the first element with a given CSS class.
-func (s *Selectable) FirstByClass(text string) *Selection {
-	return newSelection(s.session, s.selectors.Append(classType, text).At(0))
+func (s *Selectable) FirstByClass(class string) *Selection {
+	return newSelection(s.session, s.selectors.Append(classType, class).At(0))
 }
 
 // All finds zero or more elements by CSS selector.
-func (s *Selectable) All(selector string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(cssType, selector))
+func (s *Selectable) All(css string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(cssType, css))
 }
 
 // AllByXPath finds zero or more elements by XPath selector.
-func (s *Selectable) AllByXPath(selector string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(xPathType, selector))
+func (s *Selectable) AllByXPath(xpath string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(xPathType, xpath))
 }
 
 // AllByLink finds zero or more anchor elements by their text content.
@@ -122,13 +122,13 @@ func (s *Selectable) AllByName(name string) *MultiSelection {
 }
 
 // AllByClass finds zero or more elements with a given CSS class.
-func (s *Selectable) AllByClass(text string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(classType, text))
+func (s *Selectable) AllByClass(class string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(classType, class))
 }
 
 // AllByID finds zero or more elements with a given ID.
-func (s *Selectable) AllByID(text string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(idType, text))
+func (s *Selectable) AllByID(id string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(idType, id))
 }
 
 func (s *Selectable) String() string {

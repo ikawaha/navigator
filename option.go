@@ -43,7 +43,7 @@ func Browser(name string) Option {
 func ChromeOptions(opt string, value any) Option {
 	return func(c *config) {
 		if c.chromeOptions == nil {
-			c.chromeOptions = make(map[string]any)
+			c.chromeOptions = map[string]any{}
 		}
 		c.chromeOptions[opt] = value
 	}

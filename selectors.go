@@ -6,61 +6,63 @@ import (
 
 type selectors []selector
 
-func (s selectors) canMergeType(selectorType selectorType) bool {
-	if len(s) == 0 {
+func (ss selectors) canMergeType(selectorType selectorType) bool {
+	if len(ss) == 0 {
 		return false
 	}
-	last := s[len(s)-1]
+	last := ss[len(ss)-1]
 	bothCSS := selectorType == cssType && last.Type == cssType
 	return bothCSS && !last.Indexed && !last.Single
 }
 
-// XXX to private ?
-func (s selectors) Append(selectorType selectorType, value string) selectors {
-	selector := selector{
+// Append clones selectors and append (or merge) new selector.
+func (ss selectors) Append(selectorType selectorType, value string) selectors {
+	sl := selector{
 		Type:  selectorType,
 		Value: value,
 	}
-	if s.canMergeType(selectorType) {
-		lastIndex := len(s) - 1
-		selector.Value = s[lastIndex].Value + " " + selector.Value
-		return s[:lastIndex].append(selector)
+	if !ss.canMergeType(selectorType) {
+		return ss.clonePlusOne(sl)
 	}
-	return s.append(selector)
+	idx := len(ss) - 1
+	sl.Value = ss[idx].Value + " " + sl.Value
+	return ss[:idx].clonePlusOne(sl)
 }
 
-func (s selectors) Single() selectors {
-	lastIndex := len(s) - 1
-	if lastIndex < 0 {
+func (ss selectors) Single() selectors {
+	idx := len(ss) - 1
+	if idx < 0 {
 		return nil
 	}
-	selector := s[lastIndex]
-	selector.Single = true
-	selector.Indexed = false
-	return s[:lastIndex].append(selector)
+	sl := ss[idx]
+	sl.Single = true
+	sl.Indexed = false
+	return ss[:idx].clonePlusOne(sl)
 }
 
-func (s selectors) At(index int) selectors {
-	lastIndex := len(s) - 1
-	if lastIndex < 0 {
+func (ss selectors) At(index int) selectors {
+	idx := len(ss) - 1
+	if idx < 0 {
 		return nil
 	}
-	selector := s[lastIndex]
-	selector.Single = false
-	selector.Indexed = true
-	selector.Index = index
-	return s[:lastIndex].append(selector)
+	sl := ss[idx]
+	sl.Single = false
+	sl.Indexed = true
+	sl.Index = index
+	return ss[:idx].clonePlusOne(sl)
 }
 
-func (s selectors) String() string {
+func (ss selectors) String() string {
 	var tags []string
-	for _, selector := range s {
+	for _, selector := range ss {
 		tags = append(tags, selector.String())
 	}
 	return strings.Join(tags, " | ")
 }
 
-func (s selectors) append(selector selector) selectors {
-	selectorsCopy := append(selectors(nil), s...)
-	return append(selectorsCopy, selector)
+func (ss selectors) clonePlusOne(one selector) selectors {
+	ret := make(selectors, len(ss), len(ss)+1)
+	copy(ret, ss)
+	ret = append(ret, one)
+	return ret
 }

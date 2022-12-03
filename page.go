@@ -40,11 +40,7 @@ func (p *Page) String() string {
 // Session returns a *webdriver.Session that can be used to send direct commands
 // to the WebDriver. See: https://code.google.com/p/selenium/wiki/JsonWireProtocol
 func (p *Page) Session() *session.Session {
-	if p.session == nil {
-		return nil
-	}
-	ret := *p.session
-	return &ret
+	return p.session
 }
 
 // Destroy closes any open browsers by ending the session.
@@ -68,7 +64,7 @@ func (p *Page) Reset() error {
 	if url == aboutBlankURL {
 		return nil
 	}
-	if err := p.ClearCookies(); err != nil {
+	if err := p.DeleteCookies(); err != nil {
 		return err
 	}
 	if err := p.session.DeleteLocalStorage(); err != nil {
@@ -146,8 +142,8 @@ func (p *Page) DeleteCookie(name string) error {
 	return nil
 }
 
-// ClearCookies deletes all cookies on the page.
-func (p *Page) ClearCookies() error {
+// DeleteCookies deletes all cookies on the page.
+func (p *Page) DeleteCookies() error {
 	if err := p.session.DeleteCookies(); err != nil {
 		return fmt.Errorf("failed to clear cookies: %w", err)
 	}
@@ -178,7 +174,7 @@ func (p *Page) Size(width, height int) error {
 // Screenshot takes a screenshot and saves it to the provided filename.
 // The provided filename may be an absolute or relative path.
 func (p *Page) Screenshot(filename string) error {
-	absFilePath, err := filepath.Abs(filename)
+	path, err := filepath.Abs(filename)
 	if err != nil {
 		return fmt.Errorf("failed to find absolute path for filename: %w", err)
 	}
@@ -186,7 +182,7 @@ func (p *Page) Screenshot(filename string) error {
 	if err != nil {
 		return fmt.Errorf("failed to retrieve screenshot: %w", err)
 	}
-	if err := os.WriteFile(absFilePath, screenshot, 0o644); err != nil {
+	if err := os.WriteFile(path, screenshot, 0o644); err != nil {
 		return fmt.Errorf("failed to save screenshot: %w", err)
 	}
 	return nil
@@ -331,7 +327,6 @@ func (p *Page) NextWindow() error {
 	if err != nil {
 		return fmt.Errorf("failed to find available windows: %w", err)
 	}
-
 	var windowIDs []string
 	for _, v := range windows {
 		windowIDs = append(windowIDs, v.ID)
@@ -344,18 +339,15 @@ func (p *Page) NextWindow() error {
 	if err != nil {
 		return fmt.Errorf("failed to find active window: %w", err)
 	}
-
 	for position, windowID := range windowIDs {
 		if windowID == activeWindow.ID {
 			activeWindow.ID = windowIDs[(position+1)%len(windowIDs)]
 			break
 		}
 	}
-
 	if err := p.session.SetWindow(activeWindow); err != nil {
 		return fmt.Errorf("failed to change active window: %w", err)
 	}
-
 	return nil
 }
 
@@ -448,13 +440,12 @@ func (p *Page) MoveMouseBy(xOffset, yOffset int) error {
 	return nil
 }
 
-// DoubleClick double clicks the left mouse button at the current mouse
+// DoubleClick double-clicks the left mouse button at the current mouse.
 // position.
 func (p *Page) DoubleClick() error {
 	if err := p.session.DoubleClick(); err != nil {
 		return fmt.Errorf("failed to double click: %w", err)
 	}
-
 	return nil
 }
 
