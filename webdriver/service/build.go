@@ -20,7 +20,7 @@ func buildURL(urlT string, address addressInfo) (string, error) {
 	return b.String(), nil
 }
 
-func buildCommand(commandT []string, address addressInfo) (*exec.Cmd, error) {
+func buildCommand(ctx context.Context, commandT []string, address addressInfo) (*exec.Cmd, error) {
 	if len(commandT) == 0 {
 		return nil, errors.New("empty command")
 	}
@@ -36,5 +36,5 @@ func buildCommand(commandT []string, address addressInfo) (*exec.Cmd, error) {
 		}
 		command = append(command, b.String())
 	}
-	return exec.CommandContext(context.TODO(), command[0], command[1:]...), nil
+	return exec.CommandContext(ctx, command[0], command[1:]...), nil
 }

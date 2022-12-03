@@ -1,6 +1,7 @@
 package webdriver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -51,8 +52,8 @@ func (w *WebDriver) Open(desiredCapabilities map[string]any) (*session.Session, 
 }
 
 // Start starts the web driver service.
-func (w *WebDriver) Start() error {
-	if err := w.service.Start(w.Debug); err != nil {
+func (w *WebDriver) Start(ctx context.Context) error {
+	if err := w.service.Start(ctx, w.Debug); err != nil {
 		return fmt.Errorf("failed to start service: %w", err)
 	}
 	if err := w.service.WaitForBoot(w.Timeout); err != nil {

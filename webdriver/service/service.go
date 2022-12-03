@@ -38,7 +38,7 @@ func (s *Service) URL() string {
 }
 
 // Start starts the service.
-func (s *Service) Start(debug bool) error {
+func (s *Service) Start(ctx context.Context, debug bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -46,7 +46,7 @@ func (s *Service) Start(debug bool) error {
 		return errors.New("already running")
 	}
 
-	address, err := getFreeAddress()
+	address, err := getFreeAddress(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to locate a free port: %w", err)
 	}
@@ -57,7 +57,7 @@ func (s *Service) Start(debug bool) error {
 	}
 	s.baseURL = url
 
-	command, err := buildCommand(s.commandT, address)
+	command, err := buildCommand(ctx, s.commandT, address)
 	if err != nil {
 		return fmt.Errorf("failed to parse command: %w", err)
 	}
@@ -107,9 +107,9 @@ type addressInfo struct {
 	Port    string
 }
 
-func getFreeAddress() (addressInfo, error) {
+func getFreeAddress(ctx context.Context) (addressInfo, error) {
 	var lc net.ListenConfig
-	l, err := lc.Listen(context.TODO(), "tcp", "localhost:0")
+	l, err := lc.Listen(ctx, "tcp", "localhost:0")
 	if err != nil {
 		return addressInfo{}, err
 	}

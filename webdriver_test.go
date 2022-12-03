@@ -1,6 +1,7 @@
 package navigator
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -57,7 +58,7 @@ func TestChromeDriver(t *testing.T) {
 	defer ts.Close()
 
 	d := ChromeDriver(ChromeOptions("args", []string{"--headless"}))
-	if err := d.Start(); err != nil {
+	if err := d.Start(context.Background()); err != nil {
 		t.Errorf("d.Start() failed: unexpected error %v", err)
 		return
 	}

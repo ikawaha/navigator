@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
 	"testing"
 )
 
 func TestService_StartStop(t *testing.T) {
 	t.Run("command empty", func(t *testing.T) {
 		s := New("localhost", []string{})
-		if err := s.Start(false); err != nil {
+		if err := s.Start(context.Background(), false); err != nil {
 			if got, want := err.Error(), "failed to parse command: empty command"; got != want {
 				t.Errorf("want %q, got %q", want, got)
 			}
@@ -17,10 +18,10 @@ func TestService_StartStop(t *testing.T) {
 	})
 	t.Run("command already running", func(t *testing.T) {
 		s := New("localhost", []string{"sleep", "1"})
-		if err := s.Start(false); err != nil {
+		if err := s.Start(context.Background(), false); err != nil {
 			t.Fatal("unexpected error", err)
 		}
-		if err := s.Start(false); err != nil {
+		if err := s.Start(context.Background(), false); err != nil {
 			if got, want := err.Error(), "already running"; got != want {
 				t.Errorf("want %q, got %q", want, got)
 			}
@@ -32,7 +33,7 @@ func TestService_StartStop(t *testing.T) {
 		s := New("localhost", []string{"sleep", "1"})
 
 		// start
-		if err := s.Start(false); err != nil {
+		if err := s.Start(context.Background(), false); err != nil {
 			t.Errorf("s.Start() faild: unexpected error %v", err)
 			return
 		}
@@ -56,7 +57,7 @@ func TestService_StartStop(t *testing.T) {
 	})
 	t.Run("command already stopped", func(t *testing.T) {
 		s := New("localhost", []string{"sleep", "1"})
-		if err := s.Start(false); err != nil {
+		if err := s.Start(context.Background(), false); err != nil {
 			t.Errorf("s.Start() faild: unexpected error %v", err)
 			return
 		}
