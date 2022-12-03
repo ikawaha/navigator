@@ -63,7 +63,7 @@ func (s *Service) Start(ctx context.Context, debug bool) error {
 		return fmt.Errorf("failed to parse command: %w", err)
 	}
 	if debug {
-		log.Printf(command.String())
+		log.Print(command.String())
 		stdout, err := command.StdoutPipe()
 		if err != nil {
 			return err
