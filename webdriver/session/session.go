@@ -41,8 +41,8 @@ type Session struct {
 }
 
 // OpenWithClient returns a session to the web driver service.
-func OpenWithClient(client *http.Client, url string, capabilities map[string]any) (*Session, error) {
-	c, err := newConnection(client, url, capabilities)
+func OpenWithClient(client *http.Client, url string, capabilities map[string]any, debug bool) (*Session, error) {
+	c, err := newConnection(client, url, capabilities, debug)
 	if err != nil {
 		return nil, err
 	}

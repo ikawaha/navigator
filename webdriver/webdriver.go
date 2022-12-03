@@ -43,7 +43,7 @@ func (w *WebDriver) Open(desiredCapabilities map[string]any) (*session.Session, 
 	if url == "" {
 		return nil, fmt.Errorf("service not started")
 	}
-	session, err := session.OpenWithClient(w.HTTPClient, url, desiredCapabilities)
+	session, err := session.OpenWithClient(w.HTTPClient, url, desiredCapabilities, w.Debug)
 	if err != nil {
 		return nil, err
 	}

@@ -1,13 +1,14 @@
 package service
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
-	"os"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -62,14 +63,30 @@ func (s *Service) Start(ctx context.Context, debug bool) error {
 		return fmt.Errorf("failed to parse command: %w", err)
 	}
 	if debug {
-		os.Stderr.WriteString(command.String() + "\n")
-		command.Stdout = os.Stdout
-		command.Stderr = os.Stderr
+		log.Printf(command.String())
+		stdout, err := command.StdoutPipe()
+		if err != nil {
+			return err
+		}
+		go func(ctx context.Context) {
+			defer stdout.Close()
+			in := bufio.NewScanner(stdout)
+			for {
+				select {
+				case <-ctx.Done():
+					break
+				default:
+					if in.Scan() {
+						log.Print(in.Text())
+					}
+				}
+			}
+		}(ctx)
 	}
 	if err := command.Start(); err != nil {
 		err = fmt.Errorf("failed to run command: %w", err)
 		if debug {
-			os.Stderr.WriteString("ERROR: " + err.Error() + "\n")
+			log.Print("ERROR: " + err.Error())
 		}
 		return err
 	}

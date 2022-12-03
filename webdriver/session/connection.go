@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -15,9 +16,10 @@ import (
 type Connection struct {
 	sessionURL string
 	httpClient *http.Client
+	debug      bool
 }
 
-func newConnection(client *http.Client, serviceURL string, capabilities map[string]any) (*Connection, error) {
+func newConnection(client *http.Client, serviceURL string, capabilities map[string]any, debug bool) (*Connection, error) {
 	req, err := capabilitiesToJSONRequest(capabilities)
 	if err != nil {
 		return nil, err
@@ -29,6 +31,7 @@ func newConnection(client *http.Client, serviceURL string, capabilities map[stri
 	return &Connection{
 		sessionURL: serviceURL + "/session/" + sessionID,
 		httpClient: client,
+		debug:      debug,
 	}, nil
 }
 
@@ -95,10 +98,9 @@ func (c *Connection) Send(ctx context.Context, method string, pathname string, b
 		return err
 	}
 	path := strings.TrimSuffix(c.sessionURL+"/"+pathname, "/")
-
-	// log.Println(path)        // XXX
-	// log.Println(string(req)) //XXX
-
+	if c.debug {
+		log.Printf("%s %s", path, string(req))
+	}
 	resp, err := c.doRequest(ctx, method, path, req)
 	if err != nil {
 		return err
