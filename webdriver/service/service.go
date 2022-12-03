@@ -71,10 +71,11 @@ func (s *Service) Start(ctx context.Context, debug bool) error {
 		go func(ctx context.Context) {
 			defer stdout.Close()
 			in := bufio.NewScanner(stdout)
+		loop:
 			for {
 				select {
 				case <-ctx.Done():
-					break
+					break loop
 				default:
 					if in.Scan() {
 						log.Print(in.Text())
