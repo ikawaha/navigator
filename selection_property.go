@@ -51,13 +51,11 @@ func (s *Selection) hasProperty(method propertyMethod, property, name string) (s
 }
 
 // Attribute returns an attribute value for exactly one element.
-// XXX refactoring ???
 func (s *Selection) Attribute(attribute string) (string, error) {
 	return s.hasProperty((*session.Element).GetAttribute, attribute, "attribute")
 }
 
 // CSS returns a CSS style property value for exactly one element.
-// XXX refactoring ???
 func (s *Selection) CSS(property string) (string, error) {
 	return s.hasProperty((*session.Element).GetCSS, property, "CSS property")
 }
@@ -82,19 +80,16 @@ func (s *Selection) hasState(method stateMethod, name string) (bool, error) {
 }
 
 // Selected returns true if all the elements that the selection refers to are selected.
-// XXX refactoring ???
 func (s *Selection) Selected() (bool, error) {
 	return s.hasState((*session.Element).IsSelected, "selected")
 }
 
 // Visible returns true if all the elements that the selection refers to are visible.
-// XXX refactoring ???
 func (s *Selection) Visible() (bool, error) {
 	return s.hasState((*session.Element).IsDisplayed, "visible")
 }
 
 // Enabled returns true if all the elements that the selection refers to are enabled.
-// XXX refactoring ???
 func (s *Selection) Enabled() (bool, error) {
 	return s.hasState((*session.Element).IsEnabled, "enabled")
 }
