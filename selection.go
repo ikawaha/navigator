@@ -105,7 +105,7 @@ func (s *Selection) EqualsElementWithContext(ctx context.Context, other any) (bo
 		return false, fmt.Errorf("failed to select element from %s: %w", other, err)
 	}
 
-	equal, err := selectedElement.IsEqualToWithContext(ctx, otherElement)
+	equal, err := selectedElement.IsEqualTo(ctx, otherElement)
 	if err != nil {
 		return false, fmt.Errorf("failed to compare %s to %s: %w", s, other, err)
 	}
@@ -123,7 +123,7 @@ func (s *Selection) MouseToElementWithContext(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
-	if err := s.session.MoveToWithContext(ctx, selectedElement, nil); err != nil {
+	if err := s.session.MoveTo(ctx, selectedElement, nil); err != nil {
 		return fmt.Errorf("failed to move mouse to element for %s: %w", s, err)
 	}
 

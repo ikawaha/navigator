@@ -22,12 +22,7 @@ type widthHeightRequest struct {
 }
 
 // SetSize sets the size of the window of the browser.
-func (w *Window) SetSize(width, height int) error {
-	return w.SetSizeWithContext(context.Background(), width, height)
-}
-
-// SetSizeWithContext sets the size of the window of the browser.
-func (w *Window) SetSizeWithContext(ctx context.Context, width, height int) error {
+func (w *Window) SetSize(ctx context.Context, width, height int) error {
 	return w.Send(ctx, Post, "size", widthHeightRequest{
 		Width:  width,
 		Height: height,

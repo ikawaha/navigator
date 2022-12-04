@@ -72,7 +72,7 @@ func (w *WebDriver) Start(ctx context.Context) error {
 func (w *WebDriver) Stop() error {
 	ctx := context.Background() // with deadline ?
 	for _, session := range w.sessions {
-		_ = session.DeleteWindowWithContext(ctx)
+		_ = session.DeleteWindow(ctx)
 	}
 	if err := w.service.Stop(); err != nil {
 		return fmt.Errorf("failed to stop service: %w", err)

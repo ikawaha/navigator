@@ -184,7 +184,7 @@ func (s *Selectable) getElements(ctx context.Context) ([]*session.Element, error
 func retrieveElements(ctx context.Context, element *session.Element, selector selector) ([]*session.Element, error) {
 	switch {
 	case selector.Single:
-		els, err := element.GetElementsWithContext(ctx, selector.SessionSelector())
+		els, err := element.GetElements(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
@@ -195,13 +195,13 @@ func retrieveElements(ctx context.Context, element *session.Element, selector se
 		}
 		return els[:1], nil
 	case selector.Indexed && selector.Index == 0:
-		el, err := element.GetElementWithContext(ctx, selector.SessionSelector())
+		el, err := element.GetElement(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
 		return []*session.Element{el}, nil
 	case selector.Indexed && selector.Index > 0:
-		els, err := element.GetElementsWithContext(ctx, selector.SessionSelector())
+		els, err := element.GetElements(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
@@ -210,5 +210,5 @@ func retrieveElements(ctx context.Context, element *session.Element, selector se
 		}
 		return []*session.Element{els[selector.Index]}, nil
 	}
-	return element.GetElementsWithContext(ctx, selector.SessionSelector())
+	return element.GetElements(ctx, selector.SessionSelector())
 }
