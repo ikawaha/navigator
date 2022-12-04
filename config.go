@@ -18,7 +18,7 @@ type config struct {
 	desiredCapabilities Capabilities
 }
 
-func NewConfig(options []Option) config {
+func newConfig(options []Option) config {
 	var c config
 	for _, option := range options {
 		option(&c)
@@ -26,26 +26,26 @@ func NewConfig(options []Option) config {
 	return c
 }
 
-func NewMergedConfig(c config, options []Option) config {
+func newMergedConfig(config config, options []Option) config {
 	for _, option := range options {
-		option(&c)
+		option(&config)
 	}
-	return c
+	return config
 }
 
-func (c *config) Capabilities() Capabilities {
-	merged := Capabilities{"acceptSslCerts": true}
+func (c *config) capabilities() Capabilities {
+	cb := Capabilities{"acceptSslCerts": true}
 	for feature, value := range c.desiredCapabilities {
-		merged[feature] = value
+		cb[feature] = value
 	}
 	if c.browserName != "" {
-		merged.Browser(c.browserName)
+		cb.Browser(c.browserName)
 	}
 	if c.chromeOptions != nil {
-		merged["chromeOptions"] = c.chromeOptions
+		cb["chromeOptions"] = c.chromeOptions
 	}
 	if c.rejectInvalidSSL {
-		merged.Without("acceptSslCerts")
+		cb.Without("acceptSslCerts")
 	}
-	return merged
+	return cb
 }

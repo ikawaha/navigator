@@ -37,10 +37,13 @@ func Browser(name string) Option {
 }
 
 // ChromeOptions is used to pass additional options to Chrome via ChromeDriver.
+// eg.
+// ChromeOptions("args", []strings{"--headless"}
+// ChromeOptions("prefs", map[string]any{"download.default_directory": "/tmp"})
 func ChromeOptions(opt string, value any) Option {
 	return func(c *config) {
 		if c.chromeOptions == nil {
-			c.chromeOptions = make(map[string]any)
+			c.chromeOptions = map[string]any{}
 		}
 		c.chromeOptions[opt] = value
 	}

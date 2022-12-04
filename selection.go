@@ -1,6 +1,7 @@
 package navigator
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ikawaha/navigator/webdriver/session"
@@ -45,7 +46,13 @@ func (s *Selection) String() string {
 // Elements returns a []*webdriver.Element that can be used to send direct commands
 // to WebDriver elements. See: https://code.google.com/p/selenium/wiki/JsonWireProtocol
 func (s *Selection) Elements() ([]*session.Element, error) {
-	elements, err := s.getElements()
+	return s.ElementsWithContext(context.Background())
+}
+
+// ElementsWithContext returns a []*webdriver.Element that can be used to send direct commands
+// to WebDriver elements. See: https://code.google.com/p/selenium/wiki/JsonWireProtocol
+func (s *Selection) ElementsWithContext(ctx context.Context) ([]*session.Element, error) {
+	elements, err := s.getElements(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,17 +65,27 @@ func (s *Selection) Elements() ([]*session.Element, error) {
 
 // Count returns the number of elements that the selection refers to.
 func (s *Selection) Count() (int, error) {
-	elements, err := s.getElements()
-	if err != nil {
-		return 0, fmt.Errorf("failed to select elements from %s: %s", s, err)
-	}
+	return s.CountWithContext(context.Background())
+}
 
+// CountWithContext returns the number of elements that the selection refers to.
+func (s *Selection) CountWithContext(ctx context.Context) (int, error) {
+	elements, err := s.getElements(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to select elements from %s: %w", s, err)
+	}
 	return len(elements), nil
 }
 
 // EqualsElement returns whether two selections of exactly
 // one element refer to the same element.
 func (s *Selection) EqualsElement(other any) (bool, error) {
+	return s.EqualsElementWithContext(context.Background(), other)
+}
+
+// EqualsElementWithContext returns whether two selections of exactly
+// one element refer to the same element.
+func (s *Selection) EqualsElementWithContext(ctx context.Context, other any) (bool, error) {
 	otherSelection, ok := other.(*Selection)
 	if !ok {
 		multiSelection, ok := other.(*MultiSelection)
@@ -78,32 +95,36 @@ func (s *Selection) EqualsElement(other any) (bool, error) {
 		otherSelection = &multiSelection.Selection
 	}
 
-	selectedElement, err := s.getElementExactlyOne()
+	selectedElement, err := s.getElementExactlyOne(ctx)
 	if err != nil {
-		return false, fmt.Errorf("failed to select element from %s: %s", s, err)
+		return false, fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
 
-	otherElement, err := otherSelection.getElementExactlyOne()
+	otherElement, err := otherSelection.getElementExactlyOne(ctx)
 	if err != nil {
-		return false, fmt.Errorf("failed to select element from %s: %s", other, err)
+		return false, fmt.Errorf("failed to select element from %s: %w", other, err)
 	}
 
-	equal, err := selectedElement.IsEqualTo(otherElement)
+	equal, err := selectedElement.IsEqualToWithContext(ctx, otherElement)
 	if err != nil {
-		return false, fmt.Errorf("failed to compare %s to %s: %s", s, other, err)
+		return false, fmt.Errorf("failed to compare %s to %s: %w", s, other, err)
 	}
-
 	return equal, nil
 }
 
 // MouseToElement moves the mouse over exactly one element in the selection.
 func (s *Selection) MouseToElement() error {
-	selectedElement, err := s.getElementExactlyOne()
+	return s.MouseToElementWithContext(context.Background())
+}
+
+// MouseToElementWithContext moves the mouse over exactly one element in the selection.
+func (s *Selection) MouseToElementWithContext(ctx context.Context) error {
+	selectedElement, err := s.getElementExactlyOne(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to select element from %s: %s", s, err)
+		return fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
-	if err := s.session.MoveTo(selectedElement, nil); err != nil {
-		return fmt.Errorf("failed to move mouse to element for %s: %s", s, err)
+	if err := s.session.MoveToWithContext(ctx, selectedElement, nil); err != nil {
+		return fmt.Errorf("failed to move mouse to element for %s: %w", s, err)
 	}
 
 	return nil

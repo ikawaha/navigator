@@ -1,6 +1,8 @@
 package navigator
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // A Capabilities instance defines the desired capabilities the WebDriver
 // should use to configure a Page.

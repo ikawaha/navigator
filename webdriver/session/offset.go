@@ -1,11 +1,13 @@
 package session
 
+// Offset represents a position of XY coordinates.
 type Offset interface {
 	x() (x int, present bool)
 	y() (y int, present bool)
 	position() (x int, y int)
 }
 
+// XYOffset represents a position of XY coordinates.
 type XYOffset struct {
 	X int
 	Y int
@@ -23,6 +25,7 @@ func (o XYOffset) position() (x int, y int) {
 	return o.X, o.Y
 }
 
+// XOffset represents the X coordinate.
 type XOffset int
 
 func (o XOffset) x() (x int, present bool) {
@@ -37,6 +40,7 @@ func (o XOffset) position() (x int, y int) {
 	return int(o), 0
 }
 
+// YOffset represents the Y coordinate.
 type YOffset int
 
 func (YOffset) x() (x int, present bool) {

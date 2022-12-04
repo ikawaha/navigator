@@ -1,25 +1,27 @@
 package navigator
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/ikawaha/navigator/webdriver/session"
 )
 
+// Selectable represents a set of selectable elements.
 type Selectable struct {
 	session   *session.Session
 	selectors selectors
 }
 
 // Find finds exactly one element by CSS selector.
-func (s *Selectable) Find(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(cssType, selector).Single())
+func (s *Selectable) Find(css string) *Selection {
+	return newSelection(s.session, s.selectors.Append(cssType, css).Single())
 }
 
 // FindByXPath finds exactly one element by XPath selector.
-func (s *Selectable) FindByXPath(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(xPathType, selector).Single())
+func (s *Selectable) FindByXPath(xpath string) *Selection {
+	return newSelection(s.session, s.selectors.Append(xPathType, xpath).Single())
 }
 
 // FindByLink finds exactly one anchor element by its text content.
@@ -44,8 +46,8 @@ func (s *Selectable) FindByName(name string) *Selection {
 }
 
 // FindByClass finds exactly one element with a given CSS class.
-func (s *Selectable) FindByClass(text string) *Selection {
-	return newSelection(s.session, s.selectors.Append(classType, text).Single())
+func (s *Selectable) FindByClass(class string) *Selection {
+	return newSelection(s.session, s.selectors.Append(classType, class).Single())
 }
 
 // FindByID finds exactly one element that has the given ID.
@@ -54,13 +56,13 @@ func (s *Selectable) FindByID(id string) *Selection {
 }
 
 // First finds the first element by CSS selector.
-func (s *Selectable) First(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(cssType, selector).At(0))
+func (s *Selectable) First(css string) *Selection {
+	return newSelection(s.session, s.selectors.Append(cssType, css).At(0))
 }
 
 // FirstByXPath finds the first element by XPath selector.
-func (s *Selectable) FirstByXPath(selector string) *Selection {
-	return newSelection(s.session, s.selectors.Append(xPathType, selector).At(0))
+func (s *Selectable) FirstByXPath(xpath string) *Selection {
+	return newSelection(s.session, s.selectors.Append(xPathType, xpath).At(0))
 }
 
 // FirstByLink finds the first anchor element by its text content.
@@ -85,18 +87,18 @@ func (s *Selectable) FirstByName(name string) *Selection {
 }
 
 // FirstByClass finds the first element with a given CSS class.
-func (s *Selectable) FirstByClass(text string) *Selection {
-	return newSelection(s.session, s.selectors.Append(classType, text).At(0))
+func (s *Selectable) FirstByClass(class string) *Selection {
+	return newSelection(s.session, s.selectors.Append(classType, class).At(0))
 }
 
 // All finds zero or more elements by CSS selector.
-func (s *Selectable) All(selector string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(cssType, selector))
+func (s *Selectable) All(css string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(cssType, css))
 }
 
 // AllByXPath finds zero or more elements by XPath selector.
-func (s *Selectable) AllByXPath(selector string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(xPathType, selector))
+func (s *Selectable) AllByXPath(xpath string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(xPathType, xpath))
 }
 
 // AllByLink finds zero or more anchor elements by their text content.
@@ -121,13 +123,13 @@ func (s *Selectable) AllByName(name string) *MultiSelection {
 }
 
 // AllByClass finds zero or more elements with a given CSS class.
-func (s *Selectable) AllByClass(text string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(classType, text))
+func (s *Selectable) AllByClass(class string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(classType, class))
 }
 
 // AllByID finds zero or more elements with a given ID.
-func (s *Selectable) AllByID(text string) *MultiSelection {
-	return newMultiSelection(s.session, s.selectors.Append(idType, text))
+func (s *Selectable) AllByID(id string) *MultiSelection {
+	return newMultiSelection(s.session, s.selectors.Append(idType, id))
 }
 
 func (s *Selectable) String() string {
@@ -138,8 +140,8 @@ func (s *Selectable) String() string {
 	return fmt.Sprintf("%+v", ss)
 }
 
-func (s *Selectable) getElementsAtLeastOne() ([]*session.Element, error) {
-	elements, err := s.getElements()
+func (s *Selectable) getElementsAtLeastOne(ctx context.Context) ([]*session.Element, error) {
+	elements, err := s.getElements(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +151,8 @@ func (s *Selectable) getElementsAtLeastOne() ([]*session.Element, error) {
 	return elements, nil
 }
 
-func (s *Selectable) getElementExactlyOne() (*session.Element, error) {
-	elements, err := s.getElementsAtLeastOne()
+func (s *Selectable) getElementExactlyOne(ctx context.Context) (*session.Element, error) {
+	elements, err := s.getElementsAtLeastOne(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -160,67 +162,53 @@ func (s *Selectable) getElementExactlyOne() (*session.Element, error) {
 	return elements[0], nil
 }
 
-// XXX ???
-func (s *Selectable) getElements() ([]*session.Element, error) {
+func (s *Selectable) getElements(ctx context.Context) ([]*session.Element, error) {
 	if len(s.selectors) == 0 {
 		return nil, errors.New("empty selection")
 	}
-	lastElements, err := retrieveElements(s.session, s.selectors[0])
-	if err != nil {
-		return nil, err
-	}
-	for _, selector := range s.selectors[1:] {
-		var elements []*session.Element
-		for _, element := range lastElements {
-			subElements, err := retrieveElements(element.Session, selector)
+	ret := []*session.Element{{Session: s.session}} // initial dummy element
+	for _, sl := range s.selectors {
+		var next []*session.Element
+		for _, el := range ret {
+			els, err := retrieveElements(ctx, el, sl)
 			if err != nil {
 				return nil, err
 			}
-			elements = append(elements, subElements...)
+			next = append(next, els...)
 		}
-		lastElements = elements
+		ret = next
 	}
-	return lastElements, nil
+	return ret, nil
 }
 
-// XXX refactoring ???
-func retrieveElements(client *session.Session, selector selector) ([]*session.Element, error) {
-	if selector.Single {
-		elements, err := client.GetElements(selector.SessionSelector())
+func retrieveElements(ctx context.Context, element *session.Element, selector selector) ([]*session.Element, error) {
+	switch {
+	case selector.Single:
+		els, err := element.GetElementsWithContext(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
-		if len(elements) == 0 {
+		if len(els) == 0 {
 			return nil, errors.New("element not found")
-		} else if len(elements) > 1 {
+		} else if len(els) > 1 {
 			return nil, errors.New("ambiguous find")
 		}
-		return []*session.Element{elements[0]}, nil
-	}
-
-	if selector.Indexed && selector.Index > 0 {
-		elements, err := client.GetElements(selector.SessionSelector())
+		return els[:1], nil
+	case selector.Indexed && selector.Index == 0:
+		el, err := element.GetElementWithContext(ctx, selector.SessionSelector())
 		if err != nil {
 			return nil, err
 		}
-		if selector.Index >= len(elements) {
+		return []*session.Element{el}, nil
+	case selector.Indexed && selector.Index > 0:
+		els, err := element.GetElementsWithContext(ctx, selector.SessionSelector())
+		if err != nil {
+			return nil, err
+		}
+		if selector.Index < 0 || selector.Index >= len(els) {
 			return nil, errors.New("element index out of range")
 		}
-
-		return []*session.Element{elements[selector.Index]}, nil
+		return []*session.Element{els[selector.Index]}, nil
 	}
-
-	if selector.Indexed && selector.Index == 0 {
-		element, err := client.GetElement(selector.SessionSelector())
-		if err != nil {
-			return nil, err
-		}
-		return []*session.Element{element}, nil
-	}
-
-	elements, err := client.GetElements(selector.SessionSelector())
-	if err != nil {
-		return nil, err
-	}
-	return elements, nil
+	return element.GetElementsWithContext(ctx, selector.SessionSelector())
 }
