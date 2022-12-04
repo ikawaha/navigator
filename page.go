@@ -46,7 +46,12 @@ func (p *Page) Session() *session.Session {
 
 // Destroy closes any open browsers by ending the session.
 func (p *Page) Destroy() error {
-	if err := p.session.Delete(); err != nil {
+	return p.DestroyWithContext(context.Background())
+}
+
+// DestroyWithContext closes any open browsers by ending the session.
+func (p *Page) DestroyWithContext(ctx context.Context) error {
+	if err := p.session.DeleteWithContext(ctx); err != nil {
 		return fmt.Errorf("failed to destroy session: %w", err)
 	}
 	return nil
@@ -57,6 +62,14 @@ func (p *Page) Destroy() error {
 // Reset is faster than Destroy, but any cookies from domains outside the current
 // domain will remain after a page is reset.
 func (p *Page) Reset() error {
+	return p.ResetWithContext(context.Background())
+}
+
+// ResetWithContext deletes all cookies set for the current domain and navigates to a blank page.
+// Unlike Destroy, Reset will permit the page to be re-used after it is called.
+// Reset is faster than Destroy, but any cookies from domains outside the current
+// domain will remain after a page is reset.
+func (p *Page) ResetWithContext(ctx context.Context) error {
 	_ = p.ConfirmPopup()
 	url, err := p.URL()
 	if err != nil {
@@ -65,16 +78,16 @@ func (p *Page) Reset() error {
 	if url == aboutBlankURL {
 		return nil
 	}
-	if err := p.DeleteCookies(); err != nil {
+	if err := p.DeleteCookiesWithContext(ctx); err != nil {
 		return err
 	}
-	if err := p.session.DeleteLocalStorage(); err != nil {
-		if err := p.RunScript("localStorage.clear();", nil, nil); err != nil {
+	if err := p.session.DeleteLocalStorageWithContext(ctx); err != nil {
+		if err := p.RunScriptWithContext(ctx, "localStorage.clear();", nil, nil); err != nil {
 			return err
 		}
 	}
-	if err := p.session.DeleteSessionStorage(); err != nil {
-		if err := p.RunScript("sessionStorage.clear();", nil, nil); err != nil {
+	if err := p.session.DeleteSessionStorageWithContext(ctx); err != nil {
+		if err := p.RunScriptWithContext(ctx, "sessionStorage.clear();", nil, nil); err != nil {
 			return err
 		}
 	}
@@ -83,7 +96,12 @@ func (p *Page) Reset() error {
 
 // Navigate navigates to the provided URL.
 func (p *Page) Navigate(url string) error {
-	if err := p.session.SetURL(url); err != nil {
+	return p.NavigateWithContext(context.Background(), url)
+}
+
+// NavigateWithContext navigates to the provided URL.
+func (p *Page) NavigateWithContext(ctx context.Context, url string) error {
+	if err := p.session.SetURLWithContext(ctx, url); err != nil {
 		return fmt.Errorf("failed to navigate: %w", err)
 	}
 	return nil
@@ -91,7 +109,12 @@ func (p *Page) Navigate(url string) error {
 
 // GetCookies returns all cookies on the page.
 func (p *Page) GetCookies() ([]*http.Cookie, error) {
-	cookies, err := p.session.GetCookies()
+	return p.GetCookiesWithContext(context.Background())
+}
+
+// GetCookiesWithContext returns all cookies on the page.
+func (p *Page) GetCookiesWithContext(ctx context.Context) ([]*http.Cookie, error) {
+	cookies, err := p.session.GetCookiesWithContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cookies: %w", err)
 	}
@@ -114,6 +137,11 @@ func (p *Page) GetCookies() ([]*http.Cookie, error) {
 
 // SetCookie sets a cookie on the page.
 func (p *Page) SetCookie(cookie *http.Cookie) error {
+	return p.SetCookieWithContext(context.Background(), cookie)
+}
+
+// SetCookieWithContext sets a cookie on the page.
+func (p *Page) SetCookieWithContext(ctx context.Context, cookie *http.Cookie) error {
 	if cookie == nil {
 		return nil
 	}
@@ -121,7 +149,7 @@ func (p *Page) SetCookie(cookie *http.Cookie) error {
 	if !cookie.Expires.IsZero() {
 		expiry = cookie.Expires.Unix()
 	}
-	if err := p.session.SetCookie(&session.Cookie{
+	if err := p.session.SetCookieWithContext(ctx, &session.Cookie{
 		Name:     cookie.Name,
 		Value:    cookie.Value,
 		Path:     cookie.Path,
@@ -137,7 +165,12 @@ func (p *Page) SetCookie(cookie *http.Cookie) error {
 
 // DeleteCookie deletes a cookie on the page by name.
 func (p *Page) DeleteCookie(name string) error {
-	if err := p.session.DeleteCookie(name); err != nil {
+	return p.DeleteCookieWithContext(context.Background(), name)
+}
+
+// DeleteCookieWithContext deletes a cookie on the page by name.
+func (p *Page) DeleteCookieWithContext(ctx context.Context, name string) error {
+	if err := p.session.DeleteCookieWithContext(ctx, name); err != nil {
 		return fmt.Errorf("failed to delete cookie %s: %w", name, err)
 	}
 	return nil
@@ -145,7 +178,12 @@ func (p *Page) DeleteCookie(name string) error {
 
 // DeleteCookies deletes all cookies on the page.
 func (p *Page) DeleteCookies() error {
-	if err := p.session.DeleteCookies(); err != nil {
+	return p.DeleteCookiesWithContext(context.Background())
+}
+
+// DeleteCookiesWithContext deletes all cookies on the page.
+func (p *Page) DeleteCookiesWithContext(ctx context.Context) error {
+	if err := p.session.DeleteCookiesWithContext(ctx); err != nil {
 		return fmt.Errorf("failed to clear cookies: %w", err)
 	}
 	return nil
@@ -153,7 +191,12 @@ func (p *Page) DeleteCookies() error {
 
 // URL returns the current page URL.
 func (p *Page) URL() (string, error) {
-	url, err := p.session.GetURL()
+	return p.URLWithContext(context.Background())
+}
+
+// URLWithContext returns the current page URL.
+func (p *Page) URLWithContext(ctx context.Context) (string, error) {
+	url, err := p.session.GetURLWithContext(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve URL: %w", err)
 	}
@@ -162,11 +205,16 @@ func (p *Page) URL() (string, error) {
 
 // Size sets the current page size in pixels.
 func (p *Page) Size(width, height int) error {
-	window, err := p.session.GetWindow()
+	return p.SizeWithContext(context.Background(), width, height)
+}
+
+// SizeWithContext sets the current page size in pixels.
+func (p *Page) SizeWithContext(ctx context.Context, width, height int) error {
+	window, err := p.session.GetWindowWithContext(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve window: %w", err)
 	}
-	if err := window.SetSize(width, height); err != nil {
+	if err := window.SetSizeWithContext(ctx, width, height); err != nil {
 		return fmt.Errorf("failed to set window size: %w", err)
 	}
 	return nil
@@ -175,11 +223,17 @@ func (p *Page) Size(width, height int) error {
 // Screenshot takes a screenshot and saves it to the provided filename.
 // The provided filename may be an absolute or relative path.
 func (p *Page) Screenshot(filename string) error {
+	return p.ScreenshotWithContext(context.Background(), filename)
+}
+
+// ScreenshotWithContext takes a screenshot and saves it to the provided filename.
+// The provided filename may be an absolute or relative path.
+func (p *Page) ScreenshotWithContext(ctx context.Context, filename string) error {
 	path, err := filepath.Abs(filename)
 	if err != nil {
 		return fmt.Errorf("failed to find absolute path for filename: %w", err)
 	}
-	screenshot, err := p.session.GetScreenshot()
+	screenshot, err := p.session.GetScreenshotWithContext(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve screenshot: %w", err)
 	}
@@ -311,7 +365,7 @@ func (p *Page) CancelPopupWithContext(ctx context.Context) error {
 	return nil
 }
 
-// Forward navigates forward in history.
+// Forward navigates forwards in history.
 func (p *Page) Forward() error {
 	return p.ForwardWithContext(context.Background())
 }
