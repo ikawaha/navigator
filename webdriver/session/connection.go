@@ -141,22 +141,21 @@ func (c *Connection) doRequest(ctx context.Context, method, url string, body []b
 	if body != nil {
 		req.Header.Add("Content-Type", "application/json")
 	}
-	response, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
-	defer response.Body.Close()
+	defer resp.Body.Close()
 
-	resp, err := io.ReadAll(response.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return nil, toResponseError(resp)
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, toResponseError(b)
 	}
-
-	return resp, nil
+	return b, nil
 }
 
 func toResponseError(body []byte) error {
