@@ -18,7 +18,7 @@ func (s *Selection) TextWithContext(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
-	text, err := selectedElement.GetTextWithContext(ctx)
+	text, err := selectedElement.GetText(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve text for %s: %w", s, err)
 	}
@@ -36,11 +36,11 @@ func (s *Selection) ActiveWithContext(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to select element from %s: %w", s, err)
 	}
-	activeElement, err := s.session.GetActiveElementWithContext(ctx)
+	activeElement, err := s.session.GetActiveElement(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to retrieve active element: %w", err)
 	}
-	equal, err := selectedElement.IsEqualToWithContext(ctx, activeElement)
+	equal, err := selectedElement.IsEqualTo(ctx, activeElement)
 	if err != nil {
 		return false, fmt.Errorf("failed to compare selection to active element: %w", err)
 	}
@@ -68,7 +68,7 @@ func (s *Selection) Attribute(attribute string) (string, error) {
 
 // AttributeWithContext returns an attribute value for exactly one element.
 func (s *Selection) AttributeWithContext(ctx context.Context, attribute string) (string, error) {
-	return s.hasProperty(ctx, (*session.Element).GetAttributeWithContext, attribute, "attribute")
+	return s.hasProperty(ctx, (*session.Element).GetAttribute, attribute, "attribute")
 }
 
 // CSS returns a CSS style property value for exactly one element.
@@ -78,7 +78,7 @@ func (s *Selection) CSS(property string) (string, error) {
 
 // CSSWithContext returns a CSS style property value for exactly one element.
 func (s *Selection) CSSWithContext(ctx context.Context, property string) (string, error) {
-	return s.hasProperty(ctx, (*session.Element).GetCSSWithContext, property, "CSS property")
+	return s.hasProperty(ctx, (*session.Element).GetCSS, property, "CSS property")
 }
 
 type stateMethod func(element *session.Element, ctx context.Context) (bool, error)
@@ -107,7 +107,7 @@ func (s *Selection) Selected() (bool, error) {
 
 // SelectedWithContext returns true if all the elements that the selection refers to are selected.
 func (s *Selection) SelectedWithContext(ctx context.Context) (bool, error) {
-	return s.hasState(ctx, (*session.Element).IsSelectedWithContext, "selected")
+	return s.hasState(ctx, (*session.Element).IsSelected, "selected")
 }
 
 // Visible returns true if all the elements that the selection refers to are visible.
@@ -117,7 +117,7 @@ func (s *Selection) Visible() (bool, error) {
 
 // VisibleWithContext returns true if all the elements that the selection refers to are visible.
 func (s *Selection) VisibleWithContext(ctx context.Context) (bool, error) {
-	return s.hasState(ctx, (*session.Element).IsDisplayedWithContext, "visible")
+	return s.hasState(ctx, (*session.Element).IsDisplayed, "visible")
 }
 
 // Enabled returns true if all the elements that the selection refers to are enabled.
@@ -127,5 +127,5 @@ func (s *Selection) Enabled() (bool, error) {
 
 // EnabledWithContext returns true if all the elements that the selection refers to are enabled.
 func (s *Selection) EnabledWithContext(ctx context.Context) (bool, error) {
-	return s.hasState(ctx, (*session.Element).IsEnabledWithContext, "enabled")
+	return s.hasState(ctx, (*session.Element).IsEnabled, "enabled")
 }

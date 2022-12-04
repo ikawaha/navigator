@@ -12,12 +12,7 @@ type Window struct {
 }
 
 // Send sends the message to the window.
-func (w *Window) Send(method, pathname string, body, result any) error {
-	return w.SendWithContext(context.Background(), method, pathname, body, result)
-}
-
-// SendWithContext sends the message to the window.
-func (w *Window) SendWithContext(ctx context.Context, method, pathname string, body, result any) error {
+func (w *Window) Send(ctx context.Context, method, pathname string, body, result any) error {
 	return w.Session.Send(ctx, method, path.Join("window", w.ID, pathname), body, result)
 }
 
@@ -27,8 +22,8 @@ type widthHeightRequest struct {
 }
 
 // SetSize sets the size of the window of the browser.
-func (w *Window) SetSize(width, height int) error {
-	return w.Send(Post, "size", widthHeightRequest{
+func (w *Window) SetSize(ctx context.Context, width, height int) error {
+	return w.Send(ctx, Post, "size", widthHeightRequest{
 		Width:  width,
 		Height: height,
 	}, nil)

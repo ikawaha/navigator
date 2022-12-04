@@ -46,7 +46,12 @@ func (p *Page) Session() *session.Session {
 
 // Destroy closes any open browsers by ending the session.
 func (p *Page) Destroy() error {
-	if err := p.session.Delete(); err != nil {
+	return p.DestroyWithContext(context.Background())
+}
+
+// DestroyWithContext closes any open browsers by ending the session.
+func (p *Page) DestroyWithContext(ctx context.Context) error {
+	if err := p.session.Delete(ctx); err != nil {
 		return fmt.Errorf("failed to destroy session: %w", err)
 	}
 	return nil
@@ -57,33 +62,46 @@ func (p *Page) Destroy() error {
 // Reset is faster than Destroy, but any cookies from domains outside the current
 // domain will remain after a page is reset.
 func (p *Page) Reset() error {
-	_ = p.ConfirmPopup()
-	url, err := p.URL()
+	return p.ResetWithContext(context.Background())
+}
+
+// ResetWithContext deletes all cookies set for the current domain and navigates to a blank page.
+// Unlike Destroy, Reset will permit the page to be re-used after it is called.
+// Reset is faster than Destroy, but any cookies from domains outside the current
+// domain will remain after a page is reset.
+func (p *Page) ResetWithContext(ctx context.Context) error {
+	_ = p.ConfirmPopupWithContext(ctx)
+	url, err := p.URLWithContext(ctx)
 	if err != nil {
 		return err
 	}
 	if url == aboutBlankURL {
 		return nil
 	}
-	if err := p.DeleteCookies(); err != nil {
+	if err := p.DeleteCookiesWithContext(ctx); err != nil {
 		return err
 	}
-	if err := p.session.DeleteLocalStorage(); err != nil {
-		if err := p.RunScript("localStorage.clear();", nil, nil); err != nil {
+	if err := p.session.DeleteLocalStorage(ctx); err != nil {
+		if err := p.RunScriptWithContext(ctx, "localStorage.clear();", nil, nil); err != nil {
 			return err
 		}
 	}
-	if err := p.session.DeleteSessionStorage(); err != nil {
-		if err := p.RunScript("sessionStorage.clear();", nil, nil); err != nil {
+	if err := p.session.DeleteSessionStorage(ctx); err != nil {
+		if err := p.RunScriptWithContext(ctx, "sessionStorage.clear();", nil, nil); err != nil {
 			return err
 		}
 	}
-	return p.Navigate(aboutBlankURL)
+	return p.NavigateWithContext(ctx, aboutBlankURL)
 }
 
 // Navigate navigates to the provided URL.
 func (p *Page) Navigate(url string) error {
-	if err := p.session.SetURL(url); err != nil {
+	return p.NavigateWithContext(context.Background(), url)
+}
+
+// NavigateWithContext navigates to the provided URL.
+func (p *Page) NavigateWithContext(ctx context.Context, url string) error {
+	if err := p.session.SetURL(ctx, url); err != nil {
 		return fmt.Errorf("failed to navigate: %w", err)
 	}
 	return nil
@@ -91,7 +109,12 @@ func (p *Page) Navigate(url string) error {
 
 // GetCookies returns all cookies on the page.
 func (p *Page) GetCookies() ([]*http.Cookie, error) {
-	cookies, err := p.session.GetCookies()
+	return p.GetCookiesWithContext(context.Background())
+}
+
+// GetCookiesWithContext returns all cookies on the page.
+func (p *Page) GetCookiesWithContext(ctx context.Context) ([]*http.Cookie, error) {
+	cookies, err := p.session.GetCookies(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cookies: %w", err)
 	}
@@ -114,6 +137,11 @@ func (p *Page) GetCookies() ([]*http.Cookie, error) {
 
 // SetCookie sets a cookie on the page.
 func (p *Page) SetCookie(cookie *http.Cookie) error {
+	return p.SetCookieWithContext(context.Background(), cookie)
+}
+
+// SetCookieWithContext sets a cookie on the page.
+func (p *Page) SetCookieWithContext(ctx context.Context, cookie *http.Cookie) error {
 	if cookie == nil {
 		return nil
 	}
@@ -121,7 +149,7 @@ func (p *Page) SetCookie(cookie *http.Cookie) error {
 	if !cookie.Expires.IsZero() {
 		expiry = cookie.Expires.Unix()
 	}
-	if err := p.session.SetCookie(&session.Cookie{
+	if err := p.session.SetCookie(ctx, &session.Cookie{
 		Name:     cookie.Name,
 		Value:    cookie.Value,
 		Path:     cookie.Path,
@@ -137,7 +165,12 @@ func (p *Page) SetCookie(cookie *http.Cookie) error {
 
 // DeleteCookie deletes a cookie on the page by name.
 func (p *Page) DeleteCookie(name string) error {
-	if err := p.session.DeleteCookie(name); err != nil {
+	return p.DeleteCookieWithContext(context.Background(), name)
+}
+
+// DeleteCookieWithContext deletes a cookie on the page by name.
+func (p *Page) DeleteCookieWithContext(ctx context.Context, name string) error {
+	if err := p.session.DeleteCookie(ctx, name); err != nil {
 		return fmt.Errorf("failed to delete cookie %s: %w", name, err)
 	}
 	return nil
@@ -145,7 +178,12 @@ func (p *Page) DeleteCookie(name string) error {
 
 // DeleteCookies deletes all cookies on the page.
 func (p *Page) DeleteCookies() error {
-	if err := p.session.DeleteCookies(); err != nil {
+	return p.DeleteCookiesWithContext(context.Background())
+}
+
+// DeleteCookiesWithContext deletes all cookies on the page.
+func (p *Page) DeleteCookiesWithContext(ctx context.Context) error {
+	if err := p.session.DeleteCookies(ctx); err != nil {
 		return fmt.Errorf("failed to clear cookies: %w", err)
 	}
 	return nil
@@ -153,7 +191,12 @@ func (p *Page) DeleteCookies() error {
 
 // URL returns the current page URL.
 func (p *Page) URL() (string, error) {
-	url, err := p.session.GetURL()
+	return p.URLWithContext(context.Background())
+}
+
+// URLWithContext returns the current page URL.
+func (p *Page) URLWithContext(ctx context.Context) (string, error) {
+	url, err := p.session.GetURL(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve URL: %w", err)
 	}
@@ -162,11 +205,16 @@ func (p *Page) URL() (string, error) {
 
 // Size sets the current page size in pixels.
 func (p *Page) Size(width, height int) error {
-	window, err := p.session.GetWindow()
+	return p.SizeWithContext(context.Background(), width, height)
+}
+
+// SizeWithContext sets the current page size in pixels.
+func (p *Page) SizeWithContext(ctx context.Context, width, height int) error {
+	window, err := p.session.GetWindow(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve window: %w", err)
 	}
-	if err := window.SetSize(width, height); err != nil {
+	if err := window.SetSize(ctx, width, height); err != nil {
 		return fmt.Errorf("failed to set window size: %w", err)
 	}
 	return nil
@@ -175,11 +223,17 @@ func (p *Page) Size(width, height int) error {
 // Screenshot takes a screenshot and saves it to the provided filename.
 // The provided filename may be an absolute or relative path.
 func (p *Page) Screenshot(filename string) error {
+	return p.ScreenshotWithContext(context.Background(), filename)
+}
+
+// ScreenshotWithContext takes a screenshot and saves it to the provided filename.
+// The provided filename may be an absolute or relative path.
+func (p *Page) ScreenshotWithContext(ctx context.Context, filename string) error {
 	path, err := filepath.Abs(filename)
 	if err != nil {
 		return fmt.Errorf("failed to find absolute path for filename: %w", err)
 	}
-	screenshot, err := p.session.GetScreenshot()
+	screenshot, err := p.session.GetScreenshot(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve screenshot: %w", err)
 	}
@@ -196,7 +250,7 @@ func (p *Page) Title() (string, error) {
 
 // TitleWithContext returns the page title.
 func (p *Page) TitleWithContext(ctx context.Context) (string, error) {
-	title, err := p.session.GetTitleWithContext(ctx)
+	title, err := p.session.GetTitle(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve page title: %w", err)
 	}
@@ -210,7 +264,7 @@ func (p *Page) HTML() (string, error) {
 
 // HTMLWithContext returns the current contents of the DOM for the entire page.
 func (p *Page) HTMLWithContext(ctx context.Context) (string, error) {
-	html, err := p.session.GetSourceWithContext(ctx)
+	html, err := p.session.GetSource(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve page HTML: %w", err)
 	}
@@ -252,7 +306,7 @@ func (p *Page) RunScriptWithContext(ctx context.Context, body string, arguments 
 	}
 	argumentList := strings.Join(keys, ", ")
 	cleanBody := fmt.Sprintf("return (function(%s) { %s; }).apply(this, arguments);", argumentList, body)
-	if err := p.session.ExecuteWithContext(ctx, cleanBody, values, result); err != nil {
+	if err := p.session.Execute(ctx, cleanBody, values, result); err != nil {
 		return fmt.Errorf("failed to run script: %w", err)
 	}
 	return nil
@@ -265,7 +319,7 @@ func (p *Page) PopupText() (string, error) {
 
 // PopupTextWithContext returns the current alert, confirm, or prompt popup text.
 func (p *Page) PopupTextWithContext(ctx context.Context) (string, error) {
-	text, err := p.session.GetAlertTextWithContext(ctx)
+	text, err := p.session.GetAlertText(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve popup text: %w", err)
 	}
@@ -279,7 +333,7 @@ func (p *Page) EnterPopupText(text string) error {
 
 // EnterPopupTextWithContext enters text into an open prompt popup.
 func (p *Page) EnterPopupTextWithContext(ctx context.Context, text string) error {
-	if err := p.session.SetAlertTextWithContext(ctx, text); err != nil {
+	if err := p.session.SetAlertText(ctx, text); err != nil {
 		return fmt.Errorf("failed to enter popup text: %w", err)
 	}
 	return nil
@@ -292,7 +346,7 @@ func (p *Page) ConfirmPopup() error {
 
 // ConfirmPopupWithContext confirms an alert, confirm, or prompt popup.
 func (p *Page) ConfirmPopupWithContext(ctx context.Context) error {
-	if err := p.session.AcceptAlertWithContext(ctx); err != nil {
+	if err := p.session.AcceptAlert(ctx); err != nil {
 		return fmt.Errorf("failed to confirm popup: %w", err)
 	}
 	return nil
@@ -305,20 +359,20 @@ func (p *Page) CancelPopup() error {
 
 // CancelPopupWithContext cancels an alert, confirm, or prompt popup.
 func (p *Page) CancelPopupWithContext(ctx context.Context) error {
-	if err := p.session.DismissAlertWithContext(ctx); err != nil {
+	if err := p.session.DismissAlert(ctx); err != nil {
 		return fmt.Errorf("failed to cancel popup: %w", err)
 	}
 	return nil
 }
 
-// Forward navigates forward in history.
+// Forward navigates forwards in history.
 func (p *Page) Forward() error {
 	return p.ForwardWithContext(context.Background())
 }
 
 // ForwardWithContext navigates forward in history.
 func (p *Page) ForwardWithContext(ctx context.Context) error {
-	if err := p.session.ForwardWithContext(ctx); err != nil {
+	if err := p.session.Forward(ctx); err != nil {
 		return fmt.Errorf("failed to navigate forward in history: %w", err)
 	}
 	return nil
@@ -331,7 +385,7 @@ func (p *Page) Back() error {
 
 // BackWithContext navigates backwards in history.
 func (p *Page) BackWithContext(ctx context.Context) error {
-	if err := p.session.BackWithContext(ctx); err != nil {
+	if err := p.session.Back(ctx); err != nil {
 		return fmt.Errorf("failed to navigate backwards in history: %w", err)
 	}
 	return nil
@@ -344,7 +398,7 @@ func (p *Page) Refresh() error {
 
 // RefreshWithContext refreshes the page.
 func (p *Page) RefreshWithContext(ctx context.Context) error {
-	if err := p.session.RefreshWithContext(ctx); err != nil {
+	if err := p.session.Refresh(ctx); err != nil {
 		return fmt.Errorf("failed to refresh page: %w", err)
 	}
 	return nil
@@ -365,7 +419,7 @@ func (p *Page) SwitchToParentFrame() error {
 //
 // This method is not supported by PhantomJS. Please use SwitchToRootFrame instead.
 func (p *Page) SwitchToParentFrameWithContext(ctx context.Context) error {
-	if err := p.session.FrameParentWithContext(ctx); err != nil {
+	if err := p.session.FrameParent(ctx); err != nil {
 		return fmt.Errorf("failed to switch to parent frame: %w", err)
 	}
 	return nil
@@ -384,7 +438,7 @@ func (p *Page) SwitchToRootFrame() error {
 // will refer to the root frame. All further Page methods will apply to this frame
 // as well.
 func (p *Page) SwitchToRootFrameWithContext(ctx context.Context) error {
-	if err := p.session.FrameWithContext(ctx, nil); err != nil {
+	if err := p.session.Frame(ctx, nil); err != nil {
 		return fmt.Errorf("failed to switch to original page frame: %w", err)
 	}
 	return nil
@@ -399,7 +453,7 @@ func (p *Page) SwitchToWindow(name string) error {
 // SwitchToWindowWithContext switches to the first available window with the provided name
 // (JavaScript `window.name` attribute).
 func (p *Page) SwitchToWindowWithContext(ctx context.Context, name string) error {
-	if err := p.session.SetWindowByNameWithContext(ctx, name); err != nil {
+	if err := p.session.SetWindowByName(ctx, name); err != nil {
 		return fmt.Errorf("failed to switch to named window: %w", err)
 	}
 	return nil
@@ -412,7 +466,7 @@ func (p *Page) NextWindow() error {
 
 // NextWindowWithContext switches to the next available window.
 func (p *Page) NextWindowWithContext(ctx context.Context) error {
-	windows, err := p.session.GetWindowsWithContext(ctx)
+	windows, err := p.session.GetWindows(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find available windows: %w", err)
 	}
@@ -424,7 +478,7 @@ func (p *Page) NextWindowWithContext(ctx context.Context) error {
 	// order not defined according to W3 spec
 	sort.Strings(windowIDs)
 
-	activeWindow, err := p.session.GetWindowWithContext(ctx)
+	activeWindow, err := p.session.GetWindow(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find active window: %w", err)
 	}
@@ -434,7 +488,7 @@ func (p *Page) NextWindowWithContext(ctx context.Context) error {
 			break
 		}
 	}
-	if err := p.session.SetWindowWithContext(ctx, activeWindow); err != nil {
+	if err := p.session.SetWindow(ctx, activeWindow); err != nil {
 		return fmt.Errorf("failed to change active window: %w", err)
 	}
 	return nil
@@ -447,7 +501,7 @@ func (p *Page) CloseWindow() error {
 
 // CloseWindowWithContext closes the active window.
 func (p *Page) CloseWindowWithContext(ctx context.Context) error {
-	if err := p.session.DeleteWindowWithContext(ctx); err != nil {
+	if err := p.session.DeleteWindow(ctx); err != nil {
 		return fmt.Errorf("failed to close active window: %w", err)
 	}
 	return nil
@@ -460,7 +514,7 @@ func (p *Page) WindowCount() (int, error) {
 
 // WindowCountWithContext returns the number of available windows.
 func (p *Page) WindowCountWithContext(ctx context.Context) (int, error) {
-	windows, err := p.session.GetWindowsWithContext(ctx)
+	windows, err := p.session.GetWindows(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to find available windows: %w", err)
 	}
@@ -474,7 +528,7 @@ func (p *Page) LogTypes() ([]string, error) {
 
 // LogTypesWithContext returns all the valid log types that may be used with a LogReader.
 func (p *Page) LogTypesWithContext(ctx context.Context) ([]string, error) {
-	types, err := p.session.GetLogTypesWithContext(ctx)
+	types, err := p.session.GetLogTypes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve log types: %w", err)
 	}
@@ -499,7 +553,7 @@ func (p *Page) ReadNewLogsWithContext(ctx context.Context, logType string) ([]Lo
 	if p.logs == nil {
 		p.logs = map[string][]Log{}
 	}
-	clientLogs, err := p.session.NewLogsWithContext(ctx, logType)
+	clientLogs, err := p.session.NewLogs(ctx, logType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve logs: %w", err)
 	}
@@ -556,7 +610,7 @@ func (p *Page) MoveMouseBy(xOffset, yOffset int) error {
 
 // MoveMouseByWithContext moves the mouse by the provided offset.
 func (p *Page) MoveMouseByWithContext(ctx context.Context, xOffset, yOffset int) error {
-	if err := p.session.MoveToWithContext(ctx, nil, session.XYOffset{
+	if err := p.session.MoveTo(ctx, nil, session.XYOffset{
 		X: xOffset,
 		Y: yOffset,
 	}); err != nil {
@@ -572,7 +626,7 @@ func (p *Page) DoubleClick() error {
 
 // DoubleClickWithContext double-clicks the left mouse button at the current mouse position.
 func (p *Page) DoubleClickWithContext(ctx context.Context) error {
-	if err := p.session.DoubleClickWithContext(ctx); err != nil {
+	if err := p.session.DoubleClick(ctx); err != nil {
 		return fmt.Errorf("failed to double click: %w", err)
 	}
 	return nil
@@ -590,11 +644,11 @@ func (p *Page) ClickWithContext(ctx context.Context, click event.Click, button e
 	var err error
 	switch click {
 	case event.SingleClick:
-		err = p.session.ClickWithContext(ctx, button)
+		err = p.session.Click(ctx, button)
 	case event.HoldClick:
-		err = p.session.ButtonDownWithContext(ctx, button)
+		err = p.session.ButtonDown(ctx, button)
 	case event.ReleaseClick:
-		err = p.session.ButtonUpWithContext(ctx, button)
+		err = p.session.ButtonUp(ctx, button)
 	default:
 		err = errors.New("invalid touch event")
 	}
@@ -611,7 +665,7 @@ func (p *Page) SetImplicitWait(timeout int) error {
 
 // SetImplicitWaitWithContext sets the implicit wait timeout (in ms)
 func (p *Page) SetImplicitWaitWithContext(ctx context.Context, timeout int) error {
-	return p.session.SetImplicitWaitWithContext(ctx, timeout)
+	return p.session.SetImplicitWait(ctx, timeout)
 }
 
 // SetPageLoad sets the page load timeout (in ms)
@@ -621,7 +675,7 @@ func (p *Page) SetPageLoad(timeout int) error {
 
 // SetPageLoadWithContext sets the page load timeout (in ms)
 func (p *Page) SetPageLoadWithContext(ctx context.Context, timeout int) error {
-	return p.session.SetPageLoadWithContext(ctx, timeout)
+	return p.session.SetPageLoad(ctx, timeout)
 }
 
 // SetScriptTimeout sets the script timeout (in ms)
@@ -631,5 +685,5 @@ func (p *Page) SetScriptTimeout(timeout int) error {
 
 // SetScriptTimeoutWithContext sets the script timeout (in ms)
 func (p *Page) SetScriptTimeoutWithContext(ctx context.Context, timeout int) error {
-	return p.session.SetScriptTimeoutWithContext(ctx, timeout)
+	return p.session.SetScriptTimeout(ctx, timeout)
 }
