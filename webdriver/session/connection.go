@@ -19,12 +19,12 @@ type Connection struct {
 	debug      bool
 }
 
-func newConnection(client *http.Client, serviceURL string, capabilities map[string]any, debug bool) (*Connection, error) {
+func newConnection(ctx context.Context, client *http.Client, serviceURL string, capabilities map[string]any, debug bool) (*Connection, error) {
 	req, err := capabilitiesToJSONRequest(capabilities)
 	if err != nil {
 		return nil, err
 	}
-	sessionID, err := openSession(client, serviceURL, req)
+	sessionID, err := openSession(ctx, client, serviceURL, req)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +52,8 @@ func capabilitiesToJSONRequest(capabilities map[string]any) (io.Reader, error) {
 	return bytes.NewReader(capabilitiesJSON), err
 }
 
-func openSession(client *http.Client, serviceURL string, body io.Reader) (sessionID string, err error) {
-	req, err := http.NewRequestWithContext(context.TODO(), http.MethodPost, serviceURL+"/session", body)
+func openSession(ctx context.Context, client *http.Client, serviceURL string, body io.Reader) (sessionID string, err error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, serviceURL+"/session", body)
 	if err != nil {
 		return "", err
 	}

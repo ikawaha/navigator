@@ -21,11 +21,6 @@ func (e *Element) Send(ctx context.Context, method, pathname string, body, resul
 	return e.Session.Send(ctx, method, pathname, body, result)
 }
 
-// GetElement gets an element by the selector.
-func (e *Element) GetElement(selector Selector) (*Element, error) {
-	return e.GetElementWithContext(context.Background(), selector)
-}
-
 // GetElementWithContext gets an element by the selector.
 func (e *Element) GetElementWithContext(ctx context.Context, selector Selector) (*Element, error) {
 	var result elementResult
@@ -33,11 +28,6 @@ func (e *Element) GetElementWithContext(ctx context.Context, selector Selector) 
 		return nil, err
 	}
 	return &Element{ID: result.ID(), Session: e.Session}, nil
-}
-
-// GetElements gets elements by the selector.
-func (e *Element) GetElements(selector Selector) ([]*Element, error) {
-	return e.GetElementsWithContext(context.Background(), selector)
 }
 
 // GetElementsWithContext gets elements by the selector.
@@ -53,11 +43,6 @@ func (e *Element) GetElementsWithContext(ctx context.Context, selector Selector)
 	return elements, nil
 }
 
-// GetText gets a text of the element.
-func (e *Element) GetText() (string, error) {
-	return e.GetTextWithContext(context.Background())
-}
-
 // GetTextWithContext gets a text of the element.
 func (e *Element) GetTextWithContext(ctx context.Context) (string, error) {
 	var text string
@@ -65,11 +50,6 @@ func (e *Element) GetTextWithContext(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return text, nil
-}
-
-// GetName gets a name of the element.
-func (e *Element) GetName() (string, error) {
-	return e.GetNameWithContext(context.Background())
 }
 
 // GetNameWithContext gets a name of the element.
@@ -81,11 +61,6 @@ func (e *Element) GetNameWithContext(ctx context.Context) (string, error) {
 	return name, nil
 }
 
-// GetAttribute gets an attribute of the element.
-func (e *Element) GetAttribute(attribute string) (string, error) {
-	return e.GetAttributeWithContext(context.Background(), attribute)
-}
-
 // GetAttributeWithContext gets an attribute of the element.
 func (e *Element) GetAttributeWithContext(ctx context.Context, attribute string) (string, error) {
 	var value string
@@ -93,11 +68,6 @@ func (e *Element) GetAttributeWithContext(ctx context.Context, attribute string)
 		return "", err
 	}
 	return value, nil
-}
-
-// GetCSS gets a CSS property of the element.
-func (e *Element) GetCSS(property string) (string, error) {
-	return e.GetCSSWithContext(context.Background(), property)
 }
 
 // GetCSSWithContext gets a CSS property of the element.
@@ -109,29 +79,14 @@ func (e *Element) GetCSSWithContext(ctx context.Context, property string) (strin
 	return value, nil
 }
 
-// Click clicks the element.
-func (e *Element) Click() error {
-	return e.ClickWithContext(context.Background())
-}
-
 // ClickWithContext clicks the element.
 func (e *Element) ClickWithContext(ctx context.Context) error {
 	return e.Send(ctx, Post, "click", nil, nil)
 }
 
-// Clear clears the element.
-func (e *Element) Clear() error {
-	return e.ClearWithContext(context.Background())
-}
-
 // ClearWithContext clears the element.
 func (e *Element) ClearWithContext(ctx context.Context) error {
 	return e.Send(ctx, Post, "clear", nil, nil)
-}
-
-// Value sends keys corresponding to the text.
-func (e *Element) Value(text string) error {
-	return e.ValueWithContext(context.Background(), text)
 }
 
 // ValueWithContext sends keys corresponding to the text.
@@ -145,11 +100,6 @@ func (e *Element) ValueWithContext(ctx context.Context, text string) error {
 	return e.Send(ctx, Post, "value", req, nil)
 }
 
-// IsSelected returns true if the element is selected.
-func (e *Element) IsSelected() (bool, error) {
-	return e.IsSelectedWithContext(context.Background())
-}
-
 // IsSelectedWithContext returns true if the element is selected.
 func (e *Element) IsSelectedWithContext(ctx context.Context) (bool, error) {
 	var selected bool
@@ -157,11 +107,6 @@ func (e *Element) IsSelectedWithContext(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	return selected, nil
-}
-
-// IsDisplayed returns true if the element is displayed.
-func (e *Element) IsDisplayed() (bool, error) {
-	return e.IsDisplayedWithContext(context.Background())
 }
 
 // IsDisplayedWithContext returns true if the element is displayed.
@@ -173,11 +118,6 @@ func (e *Element) IsDisplayedWithContext(ctx context.Context) (bool, error) {
 	return displayed, nil
 }
 
-// IsEnabled returns true if the element is enabled.
-func (e *Element) IsEnabled() (bool, error) {
-	return e.IsEnabledWithContext(context.Background())
-}
-
 // IsEnabledWithContext returns true if the element is enabled.
 func (e *Element) IsEnabledWithContext(ctx context.Context) (bool, error) {
 	var enabled bool
@@ -187,19 +127,9 @@ func (e *Element) IsEnabledWithContext(ctx context.Context) (bool, error) {
 	return enabled, nil
 }
 
-// Submit submits the element.
-func (e *Element) Submit() error {
-	return e.SubmitWithContext(context.Background())
-}
-
 // SubmitWithContext submits the element.
 func (e *Element) SubmitWithContext(ctx context.Context) error {
 	return e.Send(ctx, Post, "submit", nil, nil)
-}
-
-// IsEqualTo returns true if the elements is equal to the other.
-func (e *Element) IsEqualTo(other *Element) (bool, error) {
-	return e.IsEqualToWithContext(context.Background(), other)
 }
 
 // IsEqualToWithContext returns true if the elements is equal to the other.
@@ -214,11 +144,6 @@ func (e *Element) IsEqualToWithContext(ctx context.Context, other *Element) (boo
 	return equal, nil
 }
 
-// GetLocation gets a location of the element.
-func (e *Element) GetLocation() (x, y int, err error) {
-	return e.GetLocationWithContext(context.Background())
-}
-
 // GetLocationWithContext gets a location of the element.
 func (e *Element) GetLocationWithContext(ctx context.Context) (x, y int, err error) {
 	var location struct {
@@ -229,11 +154,6 @@ func (e *Element) GetLocationWithContext(ctx context.Context) (x, y int, err err
 		return 0, 0, err
 	}
 	return round(location.X), round(location.Y), nil
-}
-
-// GetSize gets a size of the element.
-func (e *Element) GetSize() (width, height int, err error) {
-	return e.GetSizeWithContext(context.Background())
 }
 
 // GetSizeWithContext gets a size of the element.
