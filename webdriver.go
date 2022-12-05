@@ -148,9 +148,9 @@ func (w *WebDriver) NewPage(options ...Option) (*Page, error) {
 // http.DefaultClient if none was provided.
 func (w *WebDriver) NewPageWithContext(ctx context.Context, options ...Option) (*Page, error) {
 	c := newMergedConfig(w.defaultConfig, options)
-	session, err := w.OpenWithContext(ctx, c.capabilities())
+	s, err := w.OpenWithContext(ctx, c.capabilities())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to WebDriver: %w", err)
 	}
-	return newPage(session), nil
+	return newPage(s), nil
 }
