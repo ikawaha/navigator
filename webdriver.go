@@ -1,6 +1,7 @@
 package navigator
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 
@@ -125,11 +126,31 @@ func GeckoDriver(options ...Option) *WebDriver {
 // will always use the *http.Client provided to their WebDriver, or
 // http.DefaultClient if none was provided.
 func (w *WebDriver) NewPage(options ...Option) (*Page, error) {
+	return w.NewPageWithContext(context.Background(), options...)
+}
+
+// NewPageWithContext returns a *Page that corresponds to a new WebDriver session.
+// Provided Options configure the page. For instance, to disable JavaScript:
+//
+//	capabilities := navigator.NewCapabilities().Without("javascriptEnabled")
+//	driver.NewPage(navigator.Desired(capabilities))
+//
+// For Selenium, a Browser Option (or a Desired Option with Capabilities that
+// specify a Browser) must be provided. For instance:
+//
+//	seleniumDriver.NewPage(navigator.Browser("safari"))
+//
+// Specific Options (such as Browser) have precedence over Capabilities
+// specified by the Desired Option.
+//
+// The HTTPClient Option will be ignored if passed to this function. New pages
+// will always use the *http.Client provided to their WebDriver, or
+// http.DefaultClient if none was provided.
+func (w *WebDriver) NewPageWithContext(ctx context.Context, options ...Option) (*Page, error) {
 	c := newMergedConfig(w.defaultConfig, options)
-	session, err := w.Open(c.capabilities())
+	session, err := w.OpenWithContext(ctx, c.capabilities())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to WebDriver: %w", err)
 	}
-
 	return newPage(session), nil
 }
