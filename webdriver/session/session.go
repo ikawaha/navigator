@@ -537,7 +537,7 @@ func (s *Session) SetPageLoad(ctx context.Context, timeout int) error {
 	}, nil)
 }
 
-// SetScriptTimeout sets the timeout to the asynchronous scripts execution.
+// SetScriptTimeout sets the timeout to the asynchronous script execution.
 func (s *Session) SetScriptTimeout(ctx context.Context, timeout int) error {
 	return s.Send(ctx, Post, "timeouts/async_script", msRequest{
 		MS: timeout,

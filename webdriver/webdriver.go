@@ -48,12 +48,12 @@ func (w *WebDriver) OpenWithContext(ctx context.Context, desiredCapabilities map
 	if url == "" {
 		return nil, fmt.Errorf("service not started")
 	}
-	session, err := session.OpenWithClient(ctx, w.HTTPClient, url, desiredCapabilities, w.Debug)
+	s, err := session.OpenWithClient(ctx, w.HTTPClient, url, desiredCapabilities, w.Debug)
 	if err != nil {
 		return nil, err
 	}
-	w.sessions = append(w.sessions, session)
-	return session, nil
+	w.sessions = append(w.sessions, s)
+	return s, nil
 }
 
 // Start starts the web driver service.
@@ -71,8 +71,8 @@ func (w *WebDriver) Start(ctx context.Context) error {
 // Stop stops the web driver service.
 func (w *WebDriver) Stop() error {
 	ctx := context.Background() // with deadline ?
-	for _, session := range w.sessions {
-		_ = session.DeleteWindow(ctx)
+	for _, v := range w.sessions {
+		_ = v.DeleteWindow(ctx)
 	}
 	if err := w.service.Stop(); err != nil {
 		return fmt.Errorf("failed to stop service: %w", err)
