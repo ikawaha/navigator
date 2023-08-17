@@ -69,6 +69,9 @@ func TestChromeDriver(t *testing.T) {
 	}
 	t.Run("testdata/hello.html", func(t *testing.T) {
 		if err := page.Navigate(ts.URL + "/hello"); err != nil {
+			if err.Error() == "failed to navigate: request unsuccessful: invalid session id" {
+				t.Errorf("⚠️ May you have different versions of chrome and chrome driver?")
+			}
 			t.Errorf("page.Navigate() failed: unexpected error %v", err)
 			return
 		}
