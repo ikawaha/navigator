@@ -6,9 +6,6 @@ on:
       - main
   pull_request:
     types: [opened, synchronize]
-    paths:
-    - '**.go'
-    - 'go.mod'
 
 jobs:
   test:
